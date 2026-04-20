@@ -1,0 +1,135 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "theme": { "type": "string" },
+        "createdAt": { "type": "number", "description": "Timestamp" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "List": {
+      "title": "List",
+      "description": "A task list or workspace",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner UID" },
+        "name": { "type": "string" },
+        "color": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["userId", "name", "createdAt", "updatedAt"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "A single to-do item",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner UID" },
+        "listId": { "type": "string", "description": "Associated list ID" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["todo", "in_progress", "completed"] },
+        "priority": { "type": "string", "enum": ["none", "low", "medium", "high", "urgent"] },
+        "dueDate": { "type": "number", "description": "Timestamp" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "order": { "type": "number" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["userId", "listId", "title", "status", "createdAt", "updatedAt"]
+    },
+    "Habit": {
+      "title": "Habit",
+      "description": "A habit to track",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly"] },
+        "createdAt": { "type": "number" },
+        "logs": { "type": "array", "items": { "type": "string" }, "description": "Dates completed" }
+      },
+      "required": ["userId", "name", "frequency", "createdAt", "logs"]
+    },
+    "Note": {
+      "title": "Note",
+      "description": "A note for the second brain",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "pinned": { "type": "boolean" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["userId", "title", "content", "pinned", "createdAt", "updatedAt"]
+    },
+    "FocusSession": {
+       "title": "Focus Session",
+       "description": "A completed pomodoro focus session",
+       "type": "object",
+       "properties": {
+          "userId": { "type": "string" },
+          "durationMinutes": { "type": "number" },
+          "createdAt": { "type": "number" },
+          "type": { "type": "string" },
+          "notes": { "type": "string" },
+          "laps": { "type": "array", "items": { "type": "number" } }
+       },
+       "required": ["userId", "durationMinutes", "createdAt"]
+    },
+    "Countdown": {
+       "title": "Countdown",
+       "description": "A countdown to a specific date",
+       "type": "object",
+       "properties": {
+          "userId": { "type": "string" },
+          "title": { "type": "string" },
+          "targetDate": { "type": "number" },
+          "category": { "type": "string" },
+          "priority": { "type": "string" },
+          "color": { "type": "string" },
+          "createdAt": { "type": "number" },
+          "updatedAt": { "type": "number" }
+       },
+       "required": ["userId", "title", "targetDate", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "/lists/{listId}": {
+      "schema": { "$ref": "#/entities/List" },
+      "description": "Task lists"
+    },
+    "/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/Task" },
+      "description": "Tasks"
+    },
+    "/habits/{habitId}": {
+      "schema": { "$ref": "#/entities/Habit" },
+      "description": "Habits"
+    },
+    "/notes/{noteId}": {
+      "schema": { "$ref": "#/entities/Note" },
+      "description": "Notes"
+    },
+    "/focus_sessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/FocusSession" },
+      "description": "Focus Sessions"
+    },
+    "/countdowns/{countdownId}": {
+      "schema": { "$ref": "#/entities/Countdown" },
+      "description": "Countdowns"
+    }
+  }
+}

@@ -1,0 +1,216 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'createdAt']) && 
+             data.email is string && data.email.size() <= 200 &&
+             data.createdAt is number &&
+             data.get('displayName', '') is string && data.get('displayName', '').size() <= 100 &&
+             data.get('theme', 'light') is string && data.get('theme', 'light').size() <= 20;
+    }
+
+    function isValidList(data) {
+      return data.keys().hasAll(['userId', 'name', 'createdAt', 'updatedAt']) &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.createdAt is number && data.updatedAt is number &&
+             data.get('color', '') is string && data.get('color', '').size() <= 20;
+    }
+
+    function isValidTask(data) {
+      return data.keys().hasAll(['userId', 'listId', 'title', 'status', 'createdAt', 'updatedAt']) &&
+             data.userId == request.auth.uid &&
+             data.listId is string && data.listId.size() <= 128 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.status is string && (data.status == 'todo' || data.status == 'in_progress' || data.status == 'completed') &&
+             data.createdAt is number && data.updatedAt is number &&
+             data.get('description', '') is string && data.get('description', '').size() <= 10000 &&
+             data.get('priority', 'none') is string && data.get('priority', 'none').size() <= 20 &&
+             data.get('dueDate', 0) is number &&
+             data.get('order', 0) is number &&
+             data.get('estimatedTime', 0) is number &&
+             data.get('energy', '') is string && data.get('energy', '').size() <= 20 &&
+             data.get('category', '') is string && data.get('category', '').size() <= 50 &&
+             data.get('repeat', '') is string && data.get('repeat', '').size() <= 20 &&
+             data.get('notes', '') is string && data.get('notes', '').size() <= 10000 &&
+             data.get('subtasks', []) is list &&
+             data.get('tags', []) is list && data.get('tags', []).size() <= 20;
+    }
+
+    function isValidEvent(data) {
+      return data.keys().hasAll(['userId', 'title', 'date']) &&
+             data.userId == request.auth.uid &&
+             data.title is string && data.title.size() <= 200 &&
+             data.get('date', 0) is number &&
+             data.get('startTime', '') is string && data.get('startTime', '').size() <= 20 &&
+             data.get('endTime', '') is string && data.get('endTime', '').size() <= 20 &&
+             data.get('location', '') is string && data.get('location', '').size() <= 200;
+    }
+
+    function isValidReminder(data) {
+      return data.keys().hasAll(['userId', 'title', 'date', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.title is string && data.title.size() <= 200 &&
+             data.date is number &&
+             data.createdAt is number &&
+             data.get('time', '') is string && data.get('time', '').size() <= 20 &&
+             data.get('repeat', '') is string && data.get('repeat', '').size() <= 20 &&
+             data.get('snooze', 0) is number &&
+             data.get('status', 'pending') is string && data.get('status', 'pending').size() <= 20;
+    }
+
+    function isValidMeeting(data) {
+      return data.keys().hasAll(['userId', 'title', 'date', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.title is string && data.title.size() <= 200 &&
+             data.date is number &&
+             data.createdAt is number &&
+             data.get('startTime', '') is string && data.get('startTime', '').size() <= 20 &&
+             data.get('endTime', '') is string && data.get('endTime', '').size() <= 20 &&
+             data.get('participants', []) is list && data.get('participants', []).size() <= 50 &&
+             data.get('location', '') is string && data.get('location', '').size() <= 500 &&
+             data.get('notes', '') is string && data.get('notes', '').size() <= 10000;
+    }
+
+    function isValidHabit(data) {
+      return data.keys().hasAll(['userId', 'name', 'frequency', 'createdAt', 'logs']) &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.frequency is string && (data.frequency == 'daily' || data.frequency == 'weekly' || data.frequency == 'monthly') &&
+             data.createdAt is number &&
+             data.logs is list && data.logs.size() <= 1000 &&
+             data.get('timeOfDay', 'any') is string && data.get('timeOfDay', 'any').size() <= 50 &&
+             data.get('icon', '') is string && data.get('icon', '').size() <= 100 &&
+             data.get('color', '') is string && data.get('color', '').size() <= 50 &&
+             data.get('categoryId', '') is string && data.get('categoryId', '').size() <= 50;
+    }
+
+    function isValidNote(data) {
+      return data.keys().hasAll(['userId', 'title', 'content', 'pinned', 'createdAt', 'updatedAt']) &&
+             data.userId == request.auth.uid &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.content is string && data.content.size() <= 100000 &&
+             data.pinned is bool &&
+             data.createdAt is number && data.updatedAt is number;
+    }
+
+    function isValidFocusSession(data) {
+      return data.keys().hasAll(['userId', 'durationMinutes', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.durationMinutes is number && data.durationMinutes >= 0 &&
+             data.createdAt is number &&
+             data.get('type', 'pomodoro') is string && data.get('type', 'pomodoro').size() <= 20 &&
+             data.get('notes', '') is string && data.get('notes', '').size() <= 5000 &&
+             data.get('laps', []) is list;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidId(userId) && isValidUser(incoming());
+      allow update: if isSignedIn() && request.auth.uid == userId && isValidId(userId) && isValidUser(incoming()) && 
+                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'theme']);
+      allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
+    }
+
+    match /lists/{listId} {
+      allow get: if isSignedIn() && isValidId(listId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(listId) && isValidList(incoming());
+      allow update: if isSignedIn() && isValidId(listId) && existing().userId == request.auth.uid && isValidList(incoming()) && incoming().userId == existing().userId && incoming().createdAt == existing().createdAt &&
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'color', 'updatedAt']) ||
+                     incoming().diff(existing()).affectedKeys().hasOnly(['updatedAt']));
+      allow delete: if isSignedIn() && isValidId(listId) && existing().userId == request.auth.uid;
+    }
+
+    match /tasks/{taskId} {
+      allow get: if isSignedIn() && isValidId(taskId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(taskId) && isValidTask(incoming());
+      allow update: if isSignedIn() && isValidId(taskId) && existing().userId == request.auth.uid && isValidTask(incoming()) && incoming().userId == existing().userId && incoming().createdAt == existing().createdAt &&
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'status', 'priority', 'dueDate', 'tags', 'order', 'listId', 'updatedAt', 'estimatedTime', 'energy', 'category', 'repeat', 'notes', 'subtasks']));
+      allow delete: if isSignedIn() && isValidId(taskId) && existing().userId == request.auth.uid;
+    }
+
+    match /events/{eventId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && request.resource.data.userId == request.auth.uid && resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /reminders/{reminderId} {
+      allow get: if isSignedIn() && isValidId(reminderId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(reminderId) && isValidReminder(incoming());
+      allow update: if isSignedIn() && isValidId(reminderId) && existing().userId == request.auth.uid && isValidReminder(incoming()) && incoming().userId == existing().userId && incoming().createdAt == existing().createdAt &&
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['title', 'date', 'time', 'repeat', 'snooze', 'status']));
+      allow delete: if isSignedIn() && isValidId(reminderId) && existing().userId == request.auth.uid;
+    }
+
+    match /meetings/{meetingId} {
+      allow get: if isSignedIn() && isValidId(meetingId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(meetingId) && isValidMeeting(incoming());
+      allow update: if isSignedIn() && isValidId(meetingId) && existing().userId == request.auth.uid && isValidMeeting(incoming()) && incoming().userId == existing().userId && incoming().createdAt == existing().createdAt &&
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['title', 'date', 'startTime', 'endTime', 'participants', 'location', 'notes']));
+      allow delete: if isSignedIn() && isValidId(meetingId) && existing().userId == request.auth.uid;
+    }
+
+    match /habits/{habitId} {
+      allow get: if isSignedIn() && isValidId(habitId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(habitId) && isValidHabit(incoming());
+      allow update: if isSignedIn() && isValidId(habitId) && existing().userId == request.auth.uid && isValidHabit(incoming()) && incoming().userId == existing().userId && incoming().createdAt == existing().createdAt &&
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'frequency', 'logs', 'timeOfDay', 'icon', 'color', 'categoryId']));
+      allow delete: if isSignedIn() && isValidId(habitId) && existing().userId == request.auth.uid;
+    }
+
+    match /notes/{noteId} {
+      allow get: if isSignedIn() && isValidId(noteId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(noteId) && isValidNote(incoming());
+      allow update: if isSignedIn() && isValidId(noteId) && existing().userId == request.auth.uid && isValidNote(incoming()) && incoming().userId == existing().userId && incoming().createdAt == existing().createdAt &&
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['title', 'content', 'pinned', 'updatedAt']) ||
+                     incoming().diff(existing()).affectedKeys().hasOnly(['updatedAt']));
+      allow delete: if isSignedIn() && isValidId(noteId) && existing().userId == request.auth.uid;
+    }
+
+    function isValidCountdown(data) {
+      return data.keys().hasAll(['userId', 'title', 'targetDate', 'createdAt', 'updatedAt']) &&
+             data.userId == request.auth.uid &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.targetDate is number &&
+             data.createdAt is number && data.updatedAt is number &&
+             data.get('category', 'personal') is string && data.get('category', 'personal').size() <= 50 &&
+             data.get('priority', 'medium') is string && data.get('priority', 'medium').size() <= 20 &&
+             data.get('color', '') is string && data.get('color', '').size() <= 50;
+    }
+
+    match /countdowns/{countdownId} {
+      allow get: if isSignedIn() && isValidId(countdownId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(countdownId) && isValidCountdown(incoming());
+      allow update: if isSignedIn() && isValidId(countdownId) && existing().userId == request.auth.uid && isValidCountdown(incoming()) && incoming().userId == existing().userId && incoming().createdAt == existing().createdAt &&
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['title', 'targetDate', 'category', 'priority', 'color', 'updatedAt']));
+      allow delete: if isSignedIn() && isValidId(countdownId) && existing().userId == request.auth.uid;
+    }
+
+    match /focus_sessions/{sessionId} {
+      allow get: if isSignedIn() && isValidId(sessionId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(sessionId) && isValidFocusSession(incoming());
+      allow update: if isSignedIn() && isValidId(sessionId) && existing().userId == request.auth.uid && isValidFocusSession(incoming()) && incoming().userId == existing().userId && incoming().createdAt == existing().createdAt &&
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['durationMinutes', 'notes', 'laps']));
+      allow delete: if isSignedIn() && isValidId(sessionId) && existing().userId == request.auth.uid;
+    }
+  }
+}
