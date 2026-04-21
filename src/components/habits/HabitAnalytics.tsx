@@ -125,19 +125,19 @@ export function HabitAnalytics({ habits }: HabitAnalyticsProps) {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
       
       {/* Metrics Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {[
           { label: 'Completion Rate', value: `${stats.completionRate}%`, icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Current Streak', value: stats.currentStreak, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-50' },
           { label: 'Total Done', value: stats.totalLogs, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-50' },
           { label: 'Active Habits', value: stats.total, icon: BarChart2, color: 'text-purple-600', bg: 'bg-purple-50' },
         ].map((m, i) => (
-          <div key={i} className="bg-white border border-gray-100 p-6 rounded-[2rem] shadow-sm flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{m.label}</span>
-              <div className={cn("p-2 rounded-xl", m.bg, m.color)}><m.icon className="w-4 h-4" /></div>
+          <div key={i} className="bg-white border border-gray-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">{m.label}</span>
+              <div className={cn("p-1.5 rounded-lg", m.bg, m.color)}><m.icon className="w-3.5 h-3.5" /></div>
             </div>
-            <h3 className="text-3xl font-black text-gray-900 leading-none">{m.value}</h3>
+            <h3 className="text-2xl font-black text-gray-900 leading-none">{m.value}</h3>
           </div>
         ))}
       </div>

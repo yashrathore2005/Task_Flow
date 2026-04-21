@@ -36,62 +36,62 @@ const SortableTaskItem: React.FC<{ task: Task, onUpdate: (id: string, updates: P
   const isCompleted = task.status === 'completed';
 
   return (
-    <div ref={setNodeRef} style={style} className={`bg-white border hover:border-blue-200 transition-colors shadow-sm rounded-2xl mb-3 flex items-center p-3 relative group ${isDragging ? 'shadow-xl' : ''}`}>
+    <div ref={setNodeRef} style={style} className={`bg-white border hover:border-blue-200 transition-colors shadow-sm rounded-xl mb-2 flex items-center p-2.5 relative group ${isDragging ? 'shadow-xl' : ''}`}>
       <div {...attributes} {...listeners} className="cursor-grab text-gray-300 hover:text-gray-500 mr-2 px-1">
-        <GripVertical className="w-5 h-5" />
+        <GripVertical className="w-4 h-4" />
       </div>
       
       <button 
-        className={`mr-3 rounded-full flex-shrink-0 transition-colors h-6 w-6 flex items-center justify-center ${isCompleted ? 'bg-blue-600 text-white border-blue-600' : 'border-2 border-gray-300 hover:border-blue-400'}`}
+        className={`mr-2.5 rounded-full flex-shrink-0 transition-all h-5.5 w-5.5 flex items-center justify-center ${isCompleted ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-100' : 'border border-gray-300 hover:border-blue-400'}`}
         onClick={() => {
           onUpdate(task.id, { status: isCompleted ? 'todo' : 'completed' });
           if (!isCompleted) confetti({ particleCount: 60, spread: 50, origin: { y: 0.8 }, colors: ['#3b82f6', '#60a5fa', '#ffffff'] });
         }}
       >
-        {isCompleted && <CheckCircle2 className="w-4 h-4 text-white" strokeWidth={3} />}
+        {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-white" strokeWidth={4} />}
       </button>
       
-      <div className="flex-1 min-w-0 pr-4 cursor-pointer" onClick={() => onEdit(task)}>
-        <p className={`text-base font-semibold truncate transition-colors ${isCompleted ? 'line-through text-gray-400' : 'text-gray-900'}`}>
+      <div className="flex-1 min-w-0 pr-3 cursor-pointer" onClick={() => onEdit(task)}>
+        <p className={`text-sm font-bold truncate transition-colors ${isCompleted ? 'line-through text-gray-400' : 'text-gray-900 group-hover:text-blue-600'}`}>
           {task.title}
         </p>
         
         {/* Render subtasks progress if they exist */}
         {task.subtasks && task.subtasks.length > 0 && !isCompleted && (
-           <div className="flex items-center gap-2 mt-1">
-             <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+           <div className="flex items-center gap-1.5 mt-0.5">
+             <div className="w-12 h-1 bg-gray-100 rounded-full overflow-hidden">
                <div className="h-full bg-blue-400" style={{ width: `${(task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100}%` }}></div>
              </div>
-             <span className="text-[10px] text-gray-400 font-bold">{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
+             <span className="text-[9px] text-gray-400 font-bold">{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
            </div>
         )}
       </div>
 
-      <div className="flex items-center gap-3 shrink-0">
-        <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-           <Link to="/focus" className="text-gray-400 hover:text-blue-500 bg-gray-50 hover:bg-blue-50 w-7 h-7 rounded-full flex items-center justify-center transition-colors">
-              <PlaySquare className="w-3.5 h-3.5"/>
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+           <Link to="/focus" className="text-gray-400 hover:text-blue-600 bg-gray-50 hover:bg-blue-50 w-6 h-6 rounded-lg flex items-center justify-center transition-colors">
+              <PlaySquare className="w-3 h-3"/>
            </Link>
         </div>
         
         {task.energy && task.energy !== 'medium' && (
-           <span className="text-lg" title={`Energy: ${task.energy}`}>{task.energy === 'high' ? '⚡' : '🔋'}</span>
+           <span className="text-sm" title={`Energy: ${task.energy}`}>{task.energy === 'high' ? '⚡' : '🔋'}</span>
         )}
         
         {task.priority !== 'none' && (
-          <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-md ${task.priority === 'urgent' ? 'bg-red-100 text-red-700' : task.priority === 'high' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'}`}>
+          <span className={`text-[8px] uppercase font-black px-1.5 py-0.5 rounded-md ${task.priority === 'urgent' ? 'bg-red-50 text-red-600' : task.priority === 'high' ? 'bg-orange-50 text-orange-600' : 'bg-gray-100 text-gray-500'}`}>
             {task.priority}
           </span>
         )}
         
         {task.dueDate ? (
           <div className="flex flex-col items-end">
-            <span className={`text-xs font-medium flex items-center gap-1 ${isCompleted ? 'text-gray-400' : isBefore(task.dueDate, new Date()) && !isSameDay(task.dueDate, new Date()) ? 'text-red-500 font-bold' : 'text-blue-600'}`}>
-               <CalendarIcon className="w-3 h-3"/> {format(task.dueDate, 'MMM d')}
+            <span className={`text-[10px] font-bold flex items-center gap-1 ${isCompleted ? 'text-gray-300' : isBefore(task.dueDate, new Date()) && !isSameDay(task.dueDate, new Date()) ? 'text-red-500' : 'text-blue-600'}`}>
+               <CalendarIcon className="w-2.5 h-2.5"/> {format(task.dueDate, 'MMM d')}
             </span>
           </div>
         ) : (
-          <div className="w-[60px]" />
+          <div className="w-[40px]" />
         )}
       </div>
     </div>
@@ -224,47 +224,43 @@ export default function Tasks() {
       />
 
       {/* DASHBOARD HEADER - Improved for mobile */}
-      <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 mb-6 hidden md:block">
-        <h1 className="text-3xl font-black tracking-tight text-gray-900 mb-2">Tasks Overview</h1>
-        <p className="text-gray-500 font-medium mb-6">Manage your daily priorities efficiently.</p>
+      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-4 hidden md:block">
+        <h1 className="text-xl font-black tracking-tight text-gray-900 mb-1">Tasks Overview</h1>
+        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-4">Manage your daily priorities</p>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex flex-col items-start">
-             <div className="p-2 bg-white rounded-xl mb-3 text-blue-500 shadow-sm"><LayoutGrid className="w-4 h-4"/></div>
-             <span className="text-2xl font-black text-gray-900">{tasks.length}</span>
-             <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Total</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 flex flex-col items-start px-4">
+             <span className="text-xl font-black text-gray-900">{tasks.length}</span>
+             <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Total</span>
           </div>
-          <div className="bg-green-50 p-4 rounded-2xl border border-green-100 flex flex-col items-start">
-             <div className="p-2 bg-white rounded-xl mb-3 text-green-500 shadow-sm"><CheckSquare className="w-4 h-4"/></div>
-             <span className="text-2xl font-black text-gray-900">{completedCount}</span>
-             <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Done Today</span>
+          <div className="bg-green-50 p-3 rounded-xl border border-green-100 flex flex-col items-start px-4">
+             <span className="text-xl font-black text-gray-900">{completedCount}</span>
+             <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Done Today</span>
           </div>
-          <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 flex flex-col items-start">
-             <div className="p-2 bg-white rounded-xl mb-3 text-orange-500 shadow-sm"><AlertCircle className="w-4 h-4"/></div>
-             <span className="text-2xl font-black text-gray-900">{urgentCount}</span>
-             <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Urgent</span>
+          <div className="bg-orange-50 p-3 rounded-xl border border-orange-100 flex flex-col items-start px-4">
+             <span className="text-xl font-black text-gray-900">{urgentCount}</span>
+             <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Urgent</span>
           </div>
-          <div className="bg-purple-50 p-4 rounded-2xl border border-purple-100 flex flex-col items-start">
-             <div className="p-2 bg-white rounded-xl mb-3 text-purple-500 shadow-sm"><Settings2 className="w-4 h-4"/></div>
-             <span className="text-2xl font-black text-gray-900">{activeTasks.filter(t => t.estimatedTime && t.estimatedTime <= 15).length}</span>
-             <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Quick Wins</span>
+          <div className="bg-purple-50 p-3 rounded-xl border border-purple-100 flex flex-col items-start px-4">
+             <span className="text-xl font-black text-gray-900">{activeTasks.filter(t => t.estimatedTime && t.estimatedTime <= 15).length}</span>
+             <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Quick Wins</span>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex flex-col md:flex-row gap-4">
         {/* SMART LISTS - Horizontal on mobile, sidebar on desktop */}
-        <div className="md:w-64 shrink-0 overflow-visible">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 ml-2 hidden md:block">Smart Lists</h3>
-          <div className="flex md:flex-col gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0 scroll-smooth">
+        <div className="md:w-52 shrink-0 overflow-visible">
+          <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 ml-2 hidden md:block">Smart Lists</h3>
+          <div className="flex md:flex-col gap-1.5 overflow-x-auto no-scrollbar pb-2 md:pb-0 scroll-smooth">
             {SMART_LISTS.map(list => (
               <button 
                 key={list}
                 onClick={() => setActiveList(list)}
                 className={cn(
-                  "whitespace-nowrap px-5 py-3 rounded-2xl font-bold transition-all flex items-center group active:scale-95",
+                  "whitespace-nowrap px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center group active:scale-95",
                   activeList === list 
-                    ? "bg-gray-900 text-white shadow-xl shadow-gray-200" 
+                    ? "bg-gray-900 text-white shadow-lg shadow-gray-200" 
                     : "bg-white border border-gray-100 text-gray-500 hover:bg-gray-50 hover:text-gray-900 shadow-sm"
                 )}
               >
@@ -276,54 +272,54 @@ export default function Tasks() {
 
         {/* MAIN TASK AREA */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-3xl font-black tracking-tight text-gray-900">{activeList}</h2>
-              <p className="text-sm font-medium text-gray-500">{activeTasks.length} tasks matching</p>
+              <h2 className="text-2xl font-black tracking-tight text-gray-900 leading-none">{activeList}</h2>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{activeTasks.length} tasks</p>
             </div>
-            <Button onClick={() => setIsTaskModalOpen(true)} size="lg" className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-6 h-12 font-bold shadow-lg shadow-blue-100 hidden md:flex">
-               <Plus className="w-5 h-5 mr-2 stroke-[3]"/> Add Task
+            <Button onClick={() => setIsTaskModalOpen(true)} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 h-10 font-bold shadow-md shadow-blue-100 hidden md:flex">
+               <Plus className="w-4 h-4 mr-1.5 stroke-[3]"/> Add Task
             </Button>
           </div>
 
-          <div className="relative mb-6">
-            <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+          <div className="relative mb-4">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <Input 
-              placeholder="Search in your tasks..." 
+              placeholder="Search tasks..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-12 h-14 bg-white border-none shadow-sm rounded-2xl text-base ring-1 ring-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
+              className="pl-10 h-11 bg-white border-none shadow-sm rounded-xl text-sm ring-1 ring-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all font-medium"
             />
           </div>
 
-          <div className="mt-8 relative">
-            <form onSubmit={handleAddTask} className="mb-6">
+          <div className="mt-6 relative">
+            <form onSubmit={handleAddTask} className="mb-4">
               <div className="relative">
                 <Input 
                   placeholder="+ Add a new task..." 
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
-                  className="h-16 bg-white shadow-md shadow-gray-100 border-2 border-transparent focus-visible:border-blue-500 rounded-2xl text-lg font-medium pl-6 pr-16 transition-all"
+                  className="h-14 bg-white shadow-sm border border-gray-100 focus-visible:border-blue-500 rounded-xl text-sm font-bold pl-4 pr-12 transition-all"
                 />
                 <button 
                   type="submit" 
                   disabled={!newTaskTitle.trim()}
-                  className="absolute right-3 top-3 w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-100 active:scale-95 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none transition-all"
+                  className="absolute right-2 top-2 w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-100 active:scale-95 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none transition-all"
                 >
-                   <Plus className="w-6 h-6 stroke-[3]" />
+                   <Plus className="w-5 h-5 stroke-[3]" />
                 </button>
               </div>
             </form>
 
-        <div className="flex gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-2xl mb-6 overflow-x-auto border border-blue-100 items-center scrollbar-hide">
-          <div className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-2 shadow-sm">
-             <Sparkles className="w-4 h-4" />
+        <div className="flex gap-1.5 bg-gray-50/50 p-2 rounded-xl mb-4 overflow-x-auto border border-gray-100 items-center scrollbar-hide">
+          <div className="flex items-center justify-center shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-600 mr-1 opacity-60">
+             <Sparkles className="w-3 h-3" />
           </div>
           {AI_SUGGESTIONS.map(s => (
              <button 
                 key={s}
                 onClick={(e) => handleAddTask(e, s)}
-                className="whitespace-nowrap flex-shrink-0 text-sm font-semibold px-3 py-1.5 rounded-xl bg-white border border-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors shadow-sm"
+                className="whitespace-nowrap flex-shrink-0 text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-white border border-gray-100 text-gray-500 hover:bg-white hover:text-blue-600 transition-colors shadow-sm"
               >
                 {s}
              </button>

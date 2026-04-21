@@ -251,21 +251,20 @@ export default function Focus() {
 
   return (
     <div ref={containerRef} className={`w-full max-w-5xl mx-auto min-h-full pb-20 animate-in fade-in duration-500 flex flex-col pt-4 px-2 sm:px-0 ${isFullscreen ? 'bg-gray-100 p-8 justify-center items-center shadow-black/50 overflow-y-auto' : ''}`}>
-      
-      {!isFullscreen && (
-        <header className="mb-10 text-center sm:text-left">
-          <h1 className="text-4xl font-black tracking-tighter text-gray-900 leading-none">Focus</h1>
-          <p className="text-gray-400 font-bold mt-1 uppercase tracking-widest text-xs">Deep work sessions</p>
+           {!isFullscreen && (
+        <header className="mb-6 text-center sm:text-left">
+          <h1 className="text-3xl font-black tracking-tighter text-gray-900 leading-none">Focus</h1>
+          <p className="text-gray-400 font-bold mt-0.5 uppercase tracking-widest text-[10px]">Deep work sessions</p>
         </header>
       )}
 
       {!isFullscreen && (
-        <div className="flex flex-wrap gap-2 justify-center bg-gray-100 p-1.5 rounded-2xl mb-12 self-center w-full sm:w-auto">
+        <div className="flex flex-wrap gap-1.5 justify-center bg-gray-100 p-1 rounded-xl mb-8 self-center w-full sm:w-auto">
           {['pomodoro', 'deep_work', 'countdown', 'stopwatch'].map((m) => (
             <button 
               key={m}
               onClick={() => changeMode(m as any)} 
-              className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${mode === m ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 ${mode === m ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
             >
               {m.replace('_',' ')}
             </button>
@@ -273,24 +272,24 @@ export default function Focus() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
-        <div className={`lg:col-span-2 bg-white rounded-[3.5rem] p-8 sm:p-12 shadow-sm border border-gray-100 flex flex-col items-center relative overflow-hidden transition-all ${isFullscreen ? 'w-full max-w-3xl transform scale-105 shadow-lg mx-auto' : 'w-full'}`}>
-          <div onClick={toggleFullscreen} className="absolute top-8 right-8 text-gray-300 hover:text-gray-600 cursor-pointer transition-colors z-10">
-            {isFullscreen ? <Minimize2 className="w-6 h-6"/> : <Maximize2 className="w-6 h-6" />}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
+        <div className={`lg:col-span-2 bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-sm border border-gray-100 flex flex-col items-center relative overflow-hidden transition-all ${isFullscreen ? 'w-full max-w-3xl transform scale-105 shadow-lg mx-auto' : 'w-full'}`}>
+          <div onClick={toggleFullscreen} className="absolute top-6 right-6 text-gray-300 hover:text-gray-600 cursor-pointer transition-colors z-10">
+            {isFullscreen ? <Minimize2 className="w-5 h-5"/> : <Maximize2 className="w-5 h-5" />}
           </div>
           
           <Popover>
-            <PopoverTrigger className={`absolute top-8 left-8 cursor-pointer transition-colors border-none bg-transparent z-10 ${sound !== 'none' ? 'text-blue-500' : 'text-gray-300 hover:text-gray-600'}`}>
-              {sound === 'none' ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+            <PopoverTrigger className={`absolute top-6 left-6 cursor-pointer transition-colors border-none bg-transparent z-10 ${sound !== 'none' ? 'text-blue-500' : 'text-gray-300 hover:text-gray-600'}`}>
+              {sound === 'none' ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
             </PopoverTrigger>
-            <PopoverContent className="w-56 p-2 rounded-2xl border-gray-100 shadow-xl" align="start">
-              <h4 className="font-black text-[10px] text-gray-400 uppercase tracking-widest mb-2 px-2">Ambient Sounds</h4>
+            <PopoverContent className="w-48 p-2 rounded-xl border-gray-100 shadow-xl" align="start">
+              <h4 className="font-black text-[9px] text-gray-400 uppercase tracking-widest mb-2 px-2">Ambient Sounds</h4>
               <div className="space-y-1">
                 {SOUNDS.map(s => {
                   const Icon = s.icon;
                   return (
-                    <button key={s.id} onClick={() => setSound(s.id)} className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-colors ${sound === s.id ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-900'}`}>
-                      <Icon className="w-4 h-4" />{s.label}
+                    <button key={s.id} onClick={() => setSound(s.id)} className={`w-full text-left flex items-center gap-2 px-2.5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${sound === s.id ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-900'}`}>
+                      <Icon className="w-3.5 h-3.5" />{s.label}
                     </button>
                   )
                 })}
@@ -299,109 +298,109 @@ export default function Focus() {
           </Popover>
 
           {isConfiguring ? (
-            <div className="w-full flex flex-col items-center flex-1 animate-in slide-in-from-bottom-4 fade-in py-10">
-               <h3 className="text-2xl font-black mb-8 text-gray-900">Session Setup</h3>
-               <div className="w-full max-w-sm space-y-8">
+            <div className="w-full flex flex-col items-center flex-1 animate-in slide-in-from-bottom-4 fade-in py-6">
+               <h3 className="text-xl font-black mb-6 text-gray-900">Setup Session</h3>
+               <div className="w-full max-w-xs space-y-6">
                  {(mode === 'pomodoro' || mode === 'deep_work') && (
-                   <div className="space-y-3">
-                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Number of Sessions</label>
-                     <div className="flex gap-3">
+                   <div className="space-y-2">
+                     <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Sessions</label>
+                     <div className="flex gap-2">
                        {[1, 2, 4, 8].map(n => (
-                         <button key={n} onClick={() => setSessionCount(n)} className={`flex-1 py-3 text-sm font-black rounded-2xl transition-all ${sessionCount === n ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}>{n}</button>
+                         <button key={n} onClick={() => setSessionCount(n)} className={`flex-1 py-2 text-xs font-black rounded-xl transition-all ${sessionCount === n ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}>{n}</button>
                        ))}
                      </div>
                    </div>
                  )}
-                 <div className="space-y-3">
-                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Work duration (mins)</label>
-                   <Input type="number" min={1} max={180} value={sessionDuration} onChange={(e) => { setSessionDuration(Number(e.target.value)); setTimeLeft(Number(e.target.value)*60); }} className="h-16 rounded-2xl bg-gray-50 border-none font-black text-2xl text-center focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all" />
+                 <div className="space-y-2">
+                   <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Work (mins)</label>
+                   <Input type="number" min={1} max={180} value={sessionDuration} onChange={(e) => { setSessionDuration(Number(e.target.value)); setTimeLeft(Number(e.target.value)*60); }} className="h-12 rounded-xl bg-gray-50 border-none font-black text-xl text-center focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all" />
                  </div>
                  {(mode === 'pomodoro' || mode === 'deep_work') && (
-                   <div className="space-y-3">
-                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Break duration (mins)</label>
-                     <Input type="number" min={1} max={60} value={breakDuration} onChange={(e) => setBreakDuration(Number(e.target.value))} className="h-16 rounded-2xl bg-gray-50 border-none font-black text-2xl text-center focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all" />
+                   <div className="space-y-2">
+                     <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Break (mins)</label>
+                     <Input type="number" min={1} max={60} value={breakDuration} onChange={(e) => setBreakDuration(Number(e.target.value))} className="h-12 rounded-xl bg-gray-50 border-none font-black text-xl text-center focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all" />
                    </div>
                  )}
                </div>
-               <Button onClick={() => setIsConfiguring(false)} className="mt-12 rounded-2xl px-12 h-14 text-lg font-bold bg-gray-900 text-white hover:bg-gray-800 shadow-xl transition-all active:scale-95">Set Configurations</Button>
+               <Button onClick={() => setIsConfiguring(false)} className="mt-8 rounded-xl px-8 h-12 text-sm font-bold bg-gray-900 text-white hover:bg-gray-800 shadow-lg transition-all active:scale-95">Apply</Button>
             </div>
           ) : (
             <>
-              <div className="absolute top-8 right-20 text-gray-300 hover:text-gray-600 cursor-pointer transition-colors z-10" onClick={() => setIsConfiguring(true)}>
-                <Settings className="w-6 h-6"/>
+              <div className="absolute top-6 right-16 text-gray-300 hover:text-gray-600 cursor-pointer transition-colors z-10" onClick={() => setIsConfiguring(true)}>
+                <Settings className="w-5 h-5"/>
               </div>
-              <div className="flex flex-col items-center mt-4">
+              <div className="flex flex-col items-center mt-2">
                 <p className={cn(
-                  "font-black uppercase tracking-[0.3em] text-[10px] mb-2 px-3 py-1 rounded-full",
+                  "font-black uppercase tracking-[0.3em] text-[9px] mb-1 px-2.5 py-0.5 rounded-full",
                   isBreak ? 'text-orange-500 bg-orange-50' : 'text-blue-600 bg-blue-50'
                 )}>
                   {mode === 'stopwatch' ? 'Stopwatch' : mode === 'countdown' ? 'Countdown' : isBreak ? `Break ${currentSession}/${sessionCount}` : `${mode.replace('_',' ')} ${currentSession}/${sessionCount}`}
                 </p>
-                <h4 className="text-sm font-bold text-gray-400 mb-12">Level Up Your Focus</h4>
+                <h4 className="text-[11px] font-bold text-gray-400 mb-8 sm:mb-12 uppercase tracking-widest">Focus Mode Active</h4>
               </div>
 
               <div className={cn(
-                "w-72 h-72 sm:w-80 sm:h-80 border-[12px] flex items-center justify-center rounded-full mb-16 shadow-inner relative transition-all duration-700",
-                isFullscreen ? 'scale-110 my-12' : '',
+                "w-56 h-56 sm:w-64 sm:h-64 border-[10px] flex items-center justify-center rounded-full mb-10 sm:mb-16 shadow-inner relative transition-all duration-700",
+                isFullscreen ? 'scale-110 my-8' : '',
                 isBreak ? 'border-orange-50' : 'border-blue-50'
               )}>
                 <div className={cn(
-                  "absolute inset-0 rounded-full border-[12px] border-t-transparent animate-[spin_4s_linear_infinite] opacity-0 transition-opacity duration-1000",
+                  "absolute inset-0 rounded-full border-[10px] border-t-transparent animate-[spin_4s_linear_infinite] opacity-0 transition-opacity duration-1000",
                   isActive && "opacity-100",
                   isBreak ? 'border-orange-500' : 'border-blue-600'
                 )} style={{ animationPlayState: isActive ? 'running' : 'paused' }}/>
                 <span className={cn(
-                  "text-[5rem] sm:text-[6rem] font-black tracking-tighter tabular-nums transition-colors duration-700",
+                  "text-[4rem] sm:text-[4.5rem] font-black tracking-tighter tabular-nums transition-colors duration-700",
                   isActive ? (isBreak ? 'text-orange-500' : 'text-blue-600') : 'text-gray-900'
                 )}>
                   {mode !== 'stopwatch' ? formatTime(timeLeft) : formatMs(elapsedTime).slice(0,5)}
                 </span>
                 {mode === 'stopwatch' && (
-                  <span className="absolute bottom-16 text-sm sm:text-lg font-black text-gray-300 tabular-nums uppercase tracking-widest tracking-tighter">.{formatMs(elapsedTime).slice(-2)}</span>
+                  <span className="absolute bottom-12 text-xs sm:text-sm font-black text-gray-300 tabular-nums uppercase tracking-widest tracking-tighter">.{formatMs(elapsedTime).slice(-2)}</span>
                 )}
               </div>
 
-              <div className="flex flex-col items-center w-full max-w-md">
-                <div className="flex justify-center flex-wrap gap-8 w-full mb-10 relative">
+              <div className="flex flex-col items-center w-full max-w-sm">
+                <div className="flex justify-center flex-wrap gap-6 w-full mb-8 relative">
                   {isActive ? (
-                    <Button size="icon" onClick={toggleTimer} className="w-20 h-20 rounded-[2rem] bg-orange-50 text-orange-600 hover:bg-orange-100 shadow-sm border border-orange-100 transition-all active:scale-90">
-                      <Pause className="w-8 h-8 fill-current" />
+                    <Button size="icon" onClick={toggleTimer} className="w-16 h-16 rounded-2xl bg-orange-50 text-orange-600 hover:bg-orange-100 shadow-sm border border-orange-100 transition-all active:scale-95">
+                      <Pause className="w-7 h-7 fill-current" />
                     </Button>
                   ) : (
-                    <Button size="icon" onClick={toggleTimer} className="w-20 h-20 rounded-[2rem] bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-100 transition-all active:scale-90">
-                      <Play className="w-8 h-8 fill-current ml-1" />
+                    <Button size="icon" onClick={toggleTimer} className="w-16 h-16 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-100 transition-all active:scale-95">
+                      <Play className="w-7 h-7 fill-current ml-1" />
                     </Button>
                   )}
 
                   {mode === 'stopwatch' && isActive ? (
-                    <Button size="icon" onClick={addLap} className="w-20 h-20 rounded-[2rem] bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-100 transition-all active:scale-90">
-                      <RefreshCcw className="w-8 h-8" />
+                    <Button size="icon" onClick={addLap} className="w-16 h-16 rounded-2xl bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-100 transition-all active:scale-95">
+                      <RefreshCcw className="w-7 h-7" />
                     </Button>
                   ) : (
-                    <Button size="icon" onClick={resetTimer} className="w-20 h-20 rounded-[2rem] bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-100 transition-all active:scale-90">
-                      <Square className="w-8 h-8 fill-current" />
+                    <Button size="icon" onClick={resetTimer} className="w-16 h-16 rounded-2xl bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-100 transition-all active:scale-95">
+                      <Square className="w-7 h-7 fill-current" />
                     </Button>
                   )}
 
                   {isBreak && (
-                    <Button size="icon" onClick={skipBreak} className="w-20 h-20 rounded-[2rem] bg-gray-50 text-gray-400 hover:text-gray-900 border border-gray-100 transition-all active:scale-90" title="Skip Break">
-                      <SkipForward className="w-8 h-8" />
+                    <Button size="icon" onClick={skipBreak} className="w-16 h-16 rounded-2xl bg-gray-50 text-gray-400 hover:text-gray-900 border border-gray-100 transition-all active:scale-95" title="Skip Break">
+                      <SkipForward className="w-7 h-7" />
                     </Button>
                   )}
                 </div>
 
-                <div className="h-12 flex items-center justify-center">
+                <div className="h-10 flex items-center justify-center">
                   {isActive && !isBreak && (
-                     <button onClick={logDistraction} className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-red-50 text-red-600 font-black text-[10px] uppercase tracking-widest hover:bg-red-100 transition-all active:scale-95">
-                       <AlertCircle className="w-4 h-4" /> Distractions: {distractions}
+                     <button onClick={logDistraction} className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-red-50 text-red-600 font-black text-[9px] uppercase tracking-widest hover:bg-red-100 transition-all active:scale-95">
+                       <AlertCircle className="w-3.5 h-3.5" /> Distractions: {distractions}
                      </button>
                   )}
                   {isBreak && (
-                    <p className="text-orange-500 font-black text-[10px] uppercase tracking-[0.2em] animate-pulse">Recharge in progress...</p>
+                    <p className="text-orange-500 font-black text-[9px] uppercase tracking-[0.2em] animate-pulse">Recharging...</p>
                   )}
                   {!isActive && (elapsedTime > 0 || (mode !== 'stopwatch' && timeLeft < sessionDuration*60)) && (
-                    <Button onClick={() => handleSessionSave()} className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest text-xs h-12 px-8 shadow-lg shadow-emerald-50 active:scale-95">
-                      <Save className="w-4 h-4 mr-2" /> Finish Session
+                    <Button onClick={() => handleSessionSave()} size="sm" className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest text-[10px] h-10 px-6 shadow-md shadow-emerald-50 active:scale-95">
+                      <Save className="w-3.5 h-3.5 mr-2" /> Finish
                     </Button>
                   )}
                 </div>
@@ -411,49 +410,48 @@ export default function Focus() {
         </div>
 
         {!isFullscreen && (
-          <div className="flex flex-col gap-6">
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><Target className="w-5 h-5 text-blue-500"/> Daily Goal</h3>
-              <div className="flex justify-between text-sm font-bold mb-2">
-                <span className="text-gray-500">Focus Time</span>
-                <span className="text-gray-900">{focusMinutesToday} / 120 mins</span>
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2"><Target className="w-4 h-4 text-blue-500"/> Day Hub</h3>
+              <div className="flex justify-between text-xs font-bold mb-1.5">
+                <span className="text-gray-400 uppercase tracking-widest text-[9px]">Focus</span>
+                <span className="text-gray-900 text-[10px]">{focusMinutesToday} / 120m</span>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                 <div className="bg-blue-500 h-3 rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, (focusMinutesToday / 120) * 100)}%`}} />
+              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                 <div className="bg-blue-500 h-2 rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, (focusMinutesToday / 120) * 100)}%`}} />
               </div>
               
-              <div className="flex justify-between text-sm font-bold mb-2 mt-6">
-                <span className="text-gray-500">Distractions</span>
-                <span className="text-gray-900">{distractionsToday}</span>
+              <div className="flex justify-between text-xs font-bold mb-1.5 mt-4">
+                <span className="text-gray-400 uppercase tracking-widest text-[9px]">Distractions</span>
+                <span className="text-gray-900 text-[10px]">{distractionsToday}</span>
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-green-500"/> Weekly Focus</h3>
-              <div className="h-32 w-full">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-green-500"/> Consistency</h3>
+              <div className="h-28 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={weeklyChartData}>
-                    <Tooltip cursor={{fill: '#f3f4f6'}} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                    <Bar dataKey="mins" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    <Tooltip cursor={{fill: '#f3f4f6'}} contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -10px rgb(0 0 0 / 0.1)', fontSize: '10px' }} />
+                    <Bar dataKey="mins" fill="#3b82f6" radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex-1 overflow-hidden flex flex-col">
-              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><History className="w-5 h-5 text-gray-500"/> Recent Sessions</h3>
-              <div className="space-y-3 overflow-y-auto pr-2 flex-1 scrollbar-hide">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex-1 overflow-hidden flex flex-col">
+              <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2"><History className="w-4 h-4 text-gray-500"/> Logs</h3>
+              <div className="space-y-2 overflow-y-auto pr-1 flex-1 scrollbar-hide">
                 {sessions.length === 0 ? (
-                  <p className="text-gray-400 text-sm text-center py-4">No sessions logged yet.</p>
-                ) : sessions.slice(0, 5).map(session => (
-                  <div key={session.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                  <p className="text-gray-400 text-[10px] text-center font-bold uppercase tracking-widest py-4">No data</p>
+                ) : sessions.slice(0, 4).map(session => (
+                  <div key={session.id} className="flex justify-between items-center p-2.5 bg-gray-50 rounded-xl border border-gray-100 transition-colors hover:border-blue-100">
                      <div className="flex flex-col">
-                       <span className="font-bold text-sm text-gray-900 capitalize">{session.type.replace('_',' ')}</span>
-                       <span className="text-xs text-gray-500">{new Date(session.createdAt).toLocaleDateString()}</span>
+                       <span className="font-black text-[10px] text-gray-900 capitalize tracking-tight">{session.type.replace('_',' ')}</span>
+                       <span className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">{new Date(session.createdAt).toLocaleDateString()}</span>
                      </div>
                      <div className="flex flex-col items-end">
-                       <span className="font-black text-blue-600">{session.durationMinutes}m</span>
-                       {session.distractions > 0 && <span className="text-[10px] text-red-400 font-bold">{session.distractions} dist</span>}
+                       <span className="font-black text-blue-600 text-[11px]">{session.durationMinutes}m</span>
                      </div>
                   </div>
                 ))}

@@ -188,89 +188,86 @@ export default function Habits() {
       />
 
       {/* Hero Header */}
-      <div className="px-4 py-8 md:px-0">
-        <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tighter leading-none mb-2">
-          Habit <span className="text-blue-600">Master</span>
+      <div className="px-4 py-4 md:px-0">
+        <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-none mb-1">
+          Habit Master
         </h1>
-        <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-xs">Transform your life one ritual at a time</p>
+        <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-[10px]">Small steps every day</p>
       </div>
 
       {/* Sticky Action Toolbar */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 -mx-4 px-4 py-4 mb-8">
-        <div className="max-w-6xl mx-auto flex flex-col gap-4">
-          {/* Main Action Buttons - 2x2 Grid on Mobile, Row on Desktop */}
-          <div className="grid grid-cols-2 lg:flex gap-3 items-center w-full">
+      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 -mx-4 px-4 py-2.5 mb-6">
+        <div className="max-w-6xl mx-auto flex flex-col gap-3">
+          <div className="grid grid-cols-2 lg:flex gap-2 items-center w-full">
             <Button 
               onClick={handleNewHabit} 
-              className="h-16 lg:h-14 lg:flex-1 rounded-[1.5rem] bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-100 flex flex-col sm:flex-row items-center justify-center font-black text-xs sm:text-sm uppercase tracking-wider group transition-all active:scale-95 gap-1 sm:gap-2"
+              className="h-12 lg:h-11 lg:flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-100 flex items-center justify-center font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 gap-2"
             >
-              <Plus className="w-5 h-5 stroke-[3] group-hover:rotate-90 transition-transform" /> 
-              <span>Add Habit</span>
+              <Plus className="w-4 h-4 stroke-[3]" /> 
+              <span>Add</span>
             </Button>
             <Button 
               variant="outline" 
               onClick={() => setShowLibrary(true)} 
-              className="h-16 lg:h-14 lg:flex-1 rounded-[1.5rem] border-2 border-gray-100 font-black text-xs sm:text-sm uppercase tracking-wider bg-white hover:bg-gray-50 flex flex-col sm:flex-row items-center justify-center text-gray-700 active:scale-95 transition-all gap-1 sm:gap-2"
+              className="h-12 lg:h-11 lg:flex-1 rounded-xl border-gray-100 font-black text-[11px] uppercase tracking-wider bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700 active:scale-95 transition-all gap-2"
             >
-              <Search className="w-5 h-5 stroke-[3]" /> 
+              <Search className="w-4 h-4 stroke-[3]" /> 
               <span>Library</span>
             </Button>
             <Button 
               variant="ghost" 
               onClick={() => setActiveTab('routine')}
               className={cn(
-                "h-16 lg:h-14 lg:flex-1 rounded-[1.5rem] font-black text-xs sm:text-sm uppercase tracking-wider transition-all active:scale-95 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2",
+                "h-12 lg:h-11 lg:flex-1 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2",
                 activeTab === 'routine' ? "bg-gray-100 text-gray-900" : "text-gray-400"
               )}
             >
-              <LayoutGrid className="w-5 h-5" /> 
-              <span>My Habits</span>
+              <LayoutGrid className="w-4 h-4" /> 
+              <span>Habits</span>
             </Button>
             <Button 
               variant="ghost" 
               onClick={() => setActiveTab('progress')}
               className={cn(
-                "h-16 lg:h-14 lg:flex-1 rounded-[1.5rem] font-black text-xs sm:text-sm uppercase tracking-wider transition-all active:scale-95 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2",
+                "h-12 lg:h-11 lg:flex-1 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2",
                 activeTab === 'progress' ? "bg-gray-100 text-gray-900" : "text-gray-400"
               )}
             >
-              <BarChart2 className="w-5 h-5" /> 
-              <span>Analytics</span>
+              <BarChart2 className="w-4 h-4" /> 
+              <span>Stats</span>
             </Button>
           </div>
         </div>
       </div>
 
       {/* Stats Summary Module */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-2 sm:px-0">
-        <div className="bg-white border border-gray-100 p-6 rounded-[2rem] shadow-sm flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><BarChart2 className="w-12 h-12"/></div>
-          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Today</p>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-2 sm:px-0">
+        <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Today</p>
           <div className="flex items-end justify-between">
-            <h3 className="text-3xl font-black text-blue-600 leading-none">{progressPercent}%</h3>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><CheckCircle2 className="w-4 h-4" /></div>
+            <h3 className="text-2xl font-black text-blue-600 leading-none">{progressPercent}%</h3>
+            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><CheckCircle2 className="w-3.5 h-3.5" /></div>
           </div>
         </div>
-        <div className="bg-white border border-gray-100 p-6 rounded-[2rem] shadow-sm flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Activity className="w-12 h-12 text-orange-500"/></div>
-          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Streak</p>
+        <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Streak</p>
           <div className="flex items-end justify-between">
-            <h3 className="text-3xl font-black text-orange-500 leading-none">{Math.max(0, ...habits.map(h => calculateStreak(h.logs)))}</h3>
-            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500"><Flame className="w-4 h-4" /></div>
+            <h3 className="text-2xl font-black text-orange-500 leading-none">{Math.max(0, ...habits.map(h => calculateStreak(h.logs)))}</h3>
+            <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500"><Flame className="w-3.5 h-3.5" /></div>
           </div>
         </div>
-        <div className="bg-white border border-gray-100 p-6 rounded-[2rem] shadow-sm flex flex-col justify-between hidden md:flex">
-          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Active</p>
+        <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col justify-between hidden md:flex">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Active</p>
           <div className="flex items-end justify-between">
-            <h3 className="text-3xl font-black text-gray-900 leading-none">{habits.length}</h3>
-            <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400"><Calendar className="w-4 h-4" /></div>
+            <h3 className="text-2xl font-black text-gray-900 leading-none">{habits.length}</h3>
+            <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400"><Calendar className="w-3.5 h-3.5" /></div>
           </div>
         </div>
-        <div className="bg-white border border-gray-100 p-6 rounded-[2rem] shadow-sm flex flex-col justify-between hidden md:flex">
-          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Total Logs</p>
+        <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col justify-between hidden md:flex">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Total Logs</p>
           <div className="flex items-end justify-between">
-            <h3 className="text-3xl font-black text-gray-900 leading-none">{habits.reduce((acc, h) => acc + h.logs.length, 0)}</h3>
-            <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400"><BarChart2 className="w-4 h-4" /></div>
+            <h3 className="text-2xl font-black text-gray-900 leading-none">{habits.reduce((acc, h) => acc + h.logs.length, 0)}</h3>
+            <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400"><BarChart2 className="w-3.5 h-3.5" /></div>
           </div>
         </div>
       </div>

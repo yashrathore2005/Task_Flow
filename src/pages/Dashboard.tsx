@@ -133,39 +133,39 @@ export default function Dashboard() {
       <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
 
       {/* HEADER SECTION */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-100">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-             <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-100 text-xs font-bold text-gray-500 hover:text-gray-900 transition-all shadow-sm active:scale-95">
-                <Download className="w-4 h-4 text-blue-600" /> <span className="hidden sm:inline">Export Report</span><span className="sm:hidden">Export</span>
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-gray-100">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+             <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-100 text-[10px] font-bold text-gray-400 hover:text-gray-900 transition-all shadow-sm active:scale-95 uppercase tracking-wider">
+                <Download className="w-3.5 h-3.5 text-blue-600" /> <span className="hidden sm:inline">Export Report</span><span className="sm:hidden">Export</span>
              </button>
              <button 
                onClick={() => document.documentElement.classList.toggle('dark')}
-               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-100 text-xs font-bold text-gray-500 hover:text-gray-900 transition-all shadow-sm active:scale-95"
+               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-100 text-[10px] font-bold text-gray-400 hover:text-gray-900 transition-all shadow-sm active:scale-95 uppercase tracking-wider"
              >
-                <Palette className="w-4 h-4 text-purple-600" /> <span className="hidden sm:inline">Change Theme</span><span className="sm:hidden">Theme</span>
+                <Palette className="w-3.5 h-3.5 text-purple-600" /> <span className="hidden sm:inline">Theme</span><span className="sm:hidden">Theme</span>
              </button>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-gray-900 leading-tight dark:text-white">
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-gray-900 leading-tight dark:text-white">
             Hello, <span className="text-blue-600">{user?.displayName?.split(' ')[0] || user?.email?.split('@')[0]}</span>
           </h1>
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-gray-500 font-bold bg-white border border-gray-100 px-3 py-1.5 rounded-xl text-xs shadow-sm">
-              {format(new Date(), 'EEEE, MMMM do')}
+            <span className="text-gray-500 font-bold bg-white border border-gray-100 px-2.5 py-1 rounded-lg text-[10px] shadow-sm uppercase tracking-wider">
+              {format(new Date(), 'EEEE, MMM do')}
             </span>
-            <span className="text-blue-600 font-bold bg-blue-50 px-3 py-1.5 rounded-xl text-xs">
-              {taskStats.pending} tasks pending
+            <span className="text-blue-600 font-bold bg-blue-50 px-2.5 py-1 rounded-lg text-[10px] uppercase tracking-wider">
+              {taskStats.pending} pending
             </span>
           </div>
         </div>
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
-          <div onClick={() => navigate('/focus')} className="cursor-pointer group active:scale-95 transition-all bg-white border border-gray-100 px-5 py-4 rounded-3xl shadow-sm text-sm flex flex-col min-w-[140px] border-b-4 border-b-blue-600">
-            <span className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-2 flex items-center gap-1"><Timer className="w-3.5 h-3.5"/> Focus Today</span>
-            <span className="font-black text-2xl text-gray-900 leading-none group-hover:text-blue-600 transition-colors">{Math.floor(focusMinutes/60)}h {focusMinutes%60}m</span>
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          <div onClick={() => navigate('/focus')} className="cursor-pointer group active:scale-95 transition-all bg-white border border-gray-100 px-4 py-3 rounded-2xl shadow-sm text-sm flex flex-col min-w-[120px] border-b-2 border-b-blue-600">
+            <span className="text-gray-400 font-bold text-[9px] uppercase tracking-wider mb-1.5 flex items-center gap-1"><Timer className="w-3 h-3"/> Focus Today</span>
+            <span className="font-black text-xl text-gray-900 leading-none group-hover:text-blue-600 transition-colors">{Math.floor(focusMinutes/60)}h {focusMinutes%60}m</span>
           </div>
-          <div onClick={() => setShowCompletedModal(true)} className="cursor-pointer group active:scale-95 transition-all bg-white border border-gray-100 px-5 py-4 rounded-3xl shadow-sm text-sm flex flex-col min-w-[140px] border-b-4 border-b-green-500">
-            <span className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-2 flex items-center gap-1"><CheckSquare className="w-3.5 h-3.5"/> Tasks Done</span>
-            <span className="font-black text-2xl text-gray-900 leading-none group-hover:text-green-600 transition-colors">{taskStats.completed}/{taskStats.total}</span>
+          <div onClick={() => setShowCompletedModal(true)} className="cursor-pointer group active:scale-95 transition-all bg-white border border-gray-100 px-4 py-3 rounded-2xl shadow-sm text-sm flex flex-col min-w-[120px] border-b-2 border-b-green-500">
+            <span className="text-gray-400 font-bold text-[9px] uppercase tracking-wider mb-1.5 flex items-center gap-1"><CheckSquare className="w-3 h-3"/> Tasks Done</span>
+            <span className="font-black text-xl text-gray-900 leading-none group-hover:text-green-600 transition-colors">{taskStats.completed}/{taskStats.total}</span>
           </div>
         </div>
       </header>
@@ -186,30 +186,30 @@ export default function Dashboard() {
 
       {/* KPI GRID */}
       {!emptyState && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          <div onClick={() => navigate('/analytics')} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-blue-200 hover:shadow-md transition-all">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Zap className="w-16 h-16"/></div>
-            <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Efficiency</p>
-            <h3 className="text-4xl font-black text-blue-600">{completionRate}%</h3>
-            <p className="text-xs text-gray-400 mt-2 font-medium">Task completion rate</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
+          <div onClick={() => navigate('/analytics')} className="cursor-pointer bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-blue-200 hover:shadow-md transition-all">
+            <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"><Zap className="w-12 h-12"/></div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Efficiency</p>
+            <h3 className="text-2xl lg:text-3xl font-black text-blue-600 leading-tight">{completionRate}%</h3>
+            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wide">Completion</p>
           </div>
-          <div onClick={() => setShowCompletedModal(true)} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-orange-200 hover:shadow-md transition-all">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Flame className="w-16 h-16 text-orange-500"/></div>
-            <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Today Done</p>
-            <h3 className="text-4xl font-black text-orange-500">{taskStats.completedToday}</h3>
-            <p className="text-xs text-gray-400 mt-2 font-medium">Archived today</p>
+          <div onClick={() => setShowCompletedModal(true)} className="cursor-pointer bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-orange-200 hover:shadow-md transition-all">
+            <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"><Flame className="w-12 h-12 text-orange-500"/></div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Done Today</p>
+            <h3 className="text-2xl lg:text-3xl font-black text-orange-500 leading-tight">{taskStats.completedToday}</h3>
+            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wide">Tasks</p>
           </div>
-          <div onClick={() => setShowHabitModal(true)} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-green-200 hover:shadow-md transition-all">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Target className="w-16 h-16 text-green-500"/></div>
-            <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Habits</p>
-            <h3 className="text-4xl font-black text-green-600">{habitStats.percent}%</h3>
-            <p className="text-xs text-gray-400 mt-2 font-medium">Daily habit progress</p>
+          <div onClick={() => setShowHabitModal(true)} className="cursor-pointer bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-green-200 hover:shadow-md transition-all">
+            <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"><Target className="w-12 h-12 text-green-500"/></div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Habits</p>
+            <h3 className="text-2xl lg:text-3xl font-black text-green-600 leading-tight">{habitStats.percent}%</h3>
+            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wide">Success Rate</p>
           </div>
-          <div onClick={() => navigate('/countdowns')} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-purple-200 hover:shadow-md transition-all">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Clock className="w-16 h-16 text-purple-500"/></div>
-            <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Deadlines</p>
-            <h3 className="text-4xl font-black text-purple-600">{countdowns.filter(c => c.targetDate > Date.now()).length}</h3>
-            <p className="text-xs text-gray-400 mt-2 font-medium">Active upcoming events</p>
+          <div onClick={() => navigate('/countdowns')} className="cursor-pointer bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-purple-200 hover:shadow-md transition-all">
+            <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"><Clock className="w-12 h-12 text-purple-500"/></div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Deadlines</p>
+            <h3 className="text-2xl lg:text-3xl font-black text-purple-600 leading-tight">{countdowns.filter(c => c.targetDate > Date.now()).length}</h3>
+            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wide">Upcoming</p>
           </div>
         </div>
       )}

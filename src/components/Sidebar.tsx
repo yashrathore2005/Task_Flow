@@ -36,19 +36,19 @@ export default function Sidebar({ mobile, onNavigate }: { mobile?: boolean, onNa
   ];
 
   return (
-    <aside className={cn("w-[220px] bg-sidebar text-sidebar-foreground flex flex-col h-full", mobile ? "" : "border-r border-sidebar-border hidden md:flex")}>
-      <div className={cn("mb-8 px-6 pt-6 flex items-center gap-3", mobile ? "hidden" : "flex")}>
-        <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-100">
-           <Zap className="w-6 h-6 fill-white" />
+    <aside className={cn("w-[200px] bg-sidebar text-sidebar-foreground flex flex-col h-full", mobile ? "" : "border-r border-sidebar-border hidden md:flex")}>
+      <div className={cn("mb-4 px-5 pt-5 flex items-center gap-2", mobile ? "hidden" : "flex")}>
+        <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-100">
+           <Zap className="w-5 h-5 fill-white" />
         </div>
-        <div className="font-black text-gray-900 text-2xl tracking-tighter leading-none">TaskFlow</div>
+        <div className="font-black text-gray-900 text-xl tracking-tighter leading-none">TaskFlow</div>
       </div>
 
       <div className="px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 mt-2">
         My Space
       </div>
 
-      <nav className="flex-1 space-y-[4px] px-4">
+      <nav className="flex-1 space-y-0.5 px-3">
         {links.map((link) => {
           const active = pathname.startsWith(link.to);
           return (
@@ -57,32 +57,32 @@ export default function Sidebar({ mobile, onNavigate }: { mobile?: boolean, onNa
               to={link.to}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] transition-colors",
+                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
                 active 
                   ? "bg-sidebar-accent text-sidebar-primary font-semibold" 
                   : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
               )}
             >
-              <link.icon className="w-[18px] h-[18px]" strokeWidth={2} />
+              <link.icon className="w-4 h-4" strokeWidth={2} />
               {link.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-sidebar-border space-y-2 mt-auto">
+      <div className="p-3 border-t border-sidebar-border space-y-1 mt-auto">
         {isInstallable && (
-          <Button onClick={installPWA} className="w-full justify-start gap-3 bg-blue-600 hover:bg-blue-700 text-white shadow-sm mb-4">
-            <Download className="w-4 h-4" />
+          <Button onClick={installPWA} size="sm" className="w-full justify-start gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm mb-3 h-9">
+            <Download className="w-3.5 h-3.5" />
             Install App
           </Button>
         )}
-        <div className="px-3 text-sm text-muted-foreground truncate mb-2">
+        <div className="px-3 text-[11px] text-muted-foreground truncate mb-1">
           {user?.email}
         </div>
         <Link to="/settings" onClick={onNavigate}>
-          <Button variant="ghost" className={cn(
-               "w-full justify-start gap-3 px-3",
+          <Button variant="ghost" size="sm" className={cn(
+               "w-full justify-start gap-2.5 px-3 h-9",
                pathname === '/settings' ? "bg-sidebar-accent text-sidebar-primary font-semibold" : "text-muted-foreground"
             )}>
             <Settings className="w-4 h-4" />
@@ -91,11 +91,12 @@ export default function Sidebar({ mobile, onNavigate }: { mobile?: boolean, onNa
         </Link>
         <Button 
           variant="ghost" 
+          size="sm"
           onClick={() => {
             auth.signOut();
             onNavigate?.();
           }} 
-          className="w-full justify-start gap-3 px-3 text-red-500 hover:text-red-600 hover:bg-red-50"
+          className="w-full justify-start gap-2.5 px-3 h-9 text-red-500 hover:text-red-600 hover:bg-red-50"
         >
           <LogOut className="w-4 h-4" />
           Logout

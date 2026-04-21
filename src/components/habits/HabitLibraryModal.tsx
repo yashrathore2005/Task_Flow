@@ -53,39 +53,39 @@ export function HabitLibraryModal({ isOpen, onClose, onAddHabit, onCreateCustom 
       <DialogContent className="max-w-[100vw] sm:max-w-6xl w-full h-full sm:h-[90vh] flex flex-col p-0 overflow-hidden sm:rounded-[2.5rem] border-none shadow-2xl bg-white transition-all duration-300">
         
         {/* Mobile Header (Fixed) */}
-        <div className="flex items-center justify-between p-6 sm:p-8 border-b border-gray-100 bg-white sm:bg-transparent">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-white sm:bg-transparent">
           <div>
-            <h2 className="text-3xl font-black text-gray-900 tracking-tighter">Habit Library</h2>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-1">Discover your next ritual</p>
+            <h2 className="text-2xl font-black text-gray-900 tracking-tighter">Habit Library</h2>
+            <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5">Discover your next ritual</p>
           </div>
           <button 
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors"
+            className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Global Toolbar */}
-        <div className="px-6 sm:px-8 py-4 bg-gray-50/50 flex flex-col sm:flex-row gap-4 sm:items-center sticky top-0 z-10 backdrop-blur-sm border-b border-gray-100">
+        <div className="px-5 py-3 bg-gray-50/50 flex flex-col sm:flex-row gap-3 sm:items-center sticky top-0 z-10 backdrop-blur-sm border-b border-gray-100">
           <div className="relative flex-1 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
             <Input 
-              placeholder="Search habits, skills, or health routines..." 
+              placeholder="Search habits..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-12 h-14 bg-white border-2 border-gray-100 rounded-2xl font-bold focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all text-sm"
+              className="pl-10 h-11 bg-white border-2 border-gray-100 rounded-xl font-bold focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all text-xs"
             />
           </div>
           
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 sm:pb-0">
-            <div className="flex bg-white p-1 rounded-2xl border-2 border-gray-100">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+            <div className="flex bg-white p-1 rounded-xl border-2 border-gray-100">
               {(['popular', 'name', 'difficulty'] as const).map(s => (
                 <button
                   key={s}
                   onClick={() => setSortBy(s)}
                   className={cn(
-                    "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                    "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
                     sortBy === s ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600"
                   )}
                 >
@@ -150,10 +150,10 @@ export function HabitLibraryModal({ isOpen, onClose, onAddHabit, onCreateCustom 
             </div>
           </div>
 
-          {/* Main Grid */}
+          {/* Main List View (changed from grid to list per user request) */}
           <div className="px-6 sm:px-8">
             {!search && (
-              <div className="flex items-center gap-2 mb-8">
+              <div className="flex items-center gap-2 mb-6">
                 <Sparkles className="w-5 h-5 text-gray-400" />
                 <h3 className="text-sm font-black uppercase tracking-widest text-gray-400">
                   {search ? 'Search Results' : 'Explore All'}
@@ -161,64 +161,66 @@ export function HabitLibraryModal({ isOpen, onClose, onAddHabit, onCreateCustom 
               </div>
             )}
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex flex-col gap-2">
               {filteredHabits.map(habit => (
                 <div 
                   key={habit.id} 
-                  className="group flex flex-col p-6 rounded-[2.5rem] border-2 border-gray-50 hover:border-blue-100 bg-white hover:shadow-2xl hover:shadow-blue-50/50 transition-all active:scale-[0.98] cursor-pointer"
+                  className="group flex items-center p-2.5 rounded-xl border border-transparent hover:border-blue-100 hover:bg-blue-50/30 transition-all active:scale-[0.99] cursor-pointer"
                   onClick={() => onAddHabit(habit)}
                 >
-                  <div className="flex justify-between items-start mb-6">
-                    <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-sm transition-transform group-hover:scale-110", habit.color)}>
-                      {habit.icon}
+                  {/* Left: Icon */}
+                  <div className={cn("w-10 h-10 shrink-0 rounded-lg flex items-center justify-center text-xl shadow-sm transition-transform group-hover:scale-105", habit.color)}>
+                    {habit.icon}
+                  </div>
+
+                  {/* Middle: Name & Desc (Hidden on mobile) */}
+                  <div className="flex-1 min-w-0 px-4">
+                    <div className="flex items-baseline gap-2">
+                      <h4 className="font-black text-sm text-gray-900 group-hover:text-blue-600 transition-colors leading-tight truncate">{habit.name}</h4>
+                      <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest hidden sm:inline-block">• {habit.categoryId}</span>
                     </div>
-                    {habit.popular && (
-                      <div className="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
-                        <TrendingUp className="w-3.5 h-3.5" /> Popular
+                    <p className="text-[10px] text-gray-400 font-medium line-clamp-1 leading-relaxed hidden sm:block">
+                      {habit.description}
+                    </p>
+                  </div>
+
+                  {/* Metadata & Actions */}
+                  <div className="flex items-center gap-3 shrink-0">
+                    {/* Tags */}
+                    <div className="hidden md:flex items-center gap-1.5">
+                      <div className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded-md">
+                        <Clock className="w-2.5 h-2.5 text-gray-400" />
+                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">{habit.frequency}</span>
                       </div>
-                    )}
-                  </div>
-
-                  <h4 className="font-black text-xl text-gray-900 group-hover:text-blue-600 transition-colors leading-tight mb-2">{habit.name}</h4>
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-4">{habit.categoryId}</p>
-                  
-                  <p className="text-sm text-gray-500 font-medium line-clamp-2 mb-8 flex-1 leading-relaxed">
-                    {habit.description}
-                  </p>
-
-                  <div className="flex items-center gap-2 pb-4 border-b border-gray-50 mb-4">
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-xl">
-                      <Clock className="w-3.5 h-3.5 text-gray-400" />
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{habit.frequency}</span>
+                      <div className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded-md">
+                        <Gauge className={cn(
+                          "w-2.5 h-2.5",
+                          habit.difficulty === 'easy' ? "text-green-500" : habit.difficulty === 'medium' ? "text-orange-500" : "text-red-500"
+                        )} />
+                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">{habit.difficulty}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-xl">
-                      <Gauge className={cn(
-                        "w-3.5 h-3.5",
-                        habit.difficulty === 'easy' ? "text-green-500" : habit.difficulty === 'medium' ? "text-orange-500" : "text-red-500"
-                      )} />
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{habit.difficulty}</span>
-                    </div>
+
+                    <Button size="sm" className="h-8 w-8 sm:w-auto sm:h-8 px-0 sm:px-3 rounded-lg bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-900 font-black uppercase tracking-widest text-[9px] transition-all border-none">
+                      <Plus className="w-3.5 h-3.5 sm:mr-1.5" /> <span className="hidden sm:inline">Add</span>
+                    </Button>
                   </div>
-                  
-                  <Button className="w-full h-12 rounded-2xl bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-900 font-black uppercase tracking-widest text-xs transition-all border-none">
-                    <Plus className="w-4 h-4 mr-2" /> Add Template
-                  </Button>
                 </div>
               ))}
 
               {filteredHabits.length === 0 && (
-                <div className="col-span-full py-24 flex flex-col items-center justify-center text-center">
-                  <div className="w-24 h-24 bg-gray-50 rounded-[2.5rem] flex items-center justify-center mb-6">
-                    <Search className="w-12 h-12 text-gray-200" />
+                <div className="py-20 flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
+                    <Search className="w-8 h-8 text-gray-200" />
                   </div>
-                  <h3 className="text-2xl font-black text-gray-900">No habit found</h3>
-                  <p className="text-gray-400 font-bold uppercase tracking-widest text-xs mt-3">Try checking our categories or search for something else</p>
+                  <h3 className="text-xl font-black text-gray-900">No habit found</h3>
+                  <p className="text-gray-400 font-bold uppercase tracking-widest text-[9px] mt-2">Check categories or try another search</p>
                   <Button 
                     variant="link" 
                     onClick={() => { setSearch(''); setActiveCategory('all'); }}
-                    className="mt-6 text-blue-600 font-black uppercase tracking-widest"
+                    className="mt-4 text-blue-600 font-black uppercase tracking-widest text-[10px]"
                   >
-                    Clear All Filters
+                    Clear Filters
                   </Button>
                 </div>
               )}

@@ -65,33 +65,33 @@ export default function AppLayout() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
         {/* Mobile Sticky Header */}
-        <header className="md:hidden sticky top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 z-50">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
-              <Zap className="w-5 h-5 fill-white" />
+        <header className="md:hidden sticky top-0 left-0 right-0 h-14 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 z-50">
+          <div className="flex items-center gap-1.5">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
+              <Zap className="w-4 h-4 fill-white" />
             </div>
-            <span className="font-black text-xl tracking-tighter text-gray-900">TaskFlow</span>
+            <span className="font-black text-lg tracking-tighter text-gray-900">TaskFlow</span>
           </div>
           <div className="flex items-center gap-2">
-             <Link to="/settings" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm hover:ring-2 hover:ring-blue-500/20 transition-all active:scale-95">
+             <Link to="/settings" className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm hover:ring-2 hover:ring-blue-500/20 transition-all active:scale-95">
                 {user?.photoURL ? (
                   <img src={user.photoURL} referrerPolicy="no-referrer" className="w-full h-full object-cover" alt="Profile" />
                 ) : (
-                  <User className="w-5 h-5 text-gray-500" />
+                  <User className="w-4 h-4 text-gray-400" />
                 )}
              </Link>
           </div>
         </header>
 
         {/* Scrollable Container */}
-        <div className="flex-1 overflow-y-auto p-4 pb-28 md:p-8 space-y-6 scroll-smooth">
+        <div className="flex-1 overflow-y-auto p-3.5 pb-24 md:p-6 lg:p-7 space-y-4 lg:space-y-6 scroll-smooth">
           <Outlet />
         </div>
 
         {/* Floating Action Button (Mobile) - Positioned above bottom nav */}
         <Dialog open={isQuickAddOpen} onOpenChange={setIsQuickAddOpen}>
-          <DialogTrigger render={<button className="md:hidden fixed bottom-[96px] right-6 w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-xl shadow-blue-100 flex items-center justify-center z-50 transform active:scale-95 transition-all outline-none" />}>
-             <Plus className="w-7 h-7 stroke-[3]" />
+          <DialogTrigger render={<button className="md:hidden fixed bottom-[84px] right-5 w-12 h-12 bg-blue-600 text-white rounded-2xl shadow-xl shadow-blue-100 flex items-center justify-center z-50 transform active:scale-95 transition-all outline-none" />}>
+             <Plus className="w-6 h-6 stroke-[3]" />
           </DialogTrigger>
           <DialogContent className="rounded-t-3xl sm:rounded-2xl p-0 overflow-hidden border-none shadow-2xl">
             <DialogHeader className="p-6 pb-0">
@@ -112,33 +112,33 @@ export default function AppLayout() {
         </Dialog>
 
         {/* Mobile Bottom Navigation - Redesigned */}
-        <div className="md:hidden fixed bottom-1 left-4 right-4 bg-white/95 backdrop-blur-md border border-gray-100 z-40 shadow-[0_-8px_30px_rgba(0,0,0,0.05)] rounded-[2.5rem]">
-          <nav className="flex items-center overflow-x-auto no-scrollbar scroll-smooth px-2 h-20 scrollbar-hide">
-            <div className="flex items-center min-w-max mx-auto gap-0.5">
+        <div className="md:hidden fixed bottom-1 left-3 right-3 bg-white/95 backdrop-blur-md border border-gray-100 z-40 shadow-[0_-8px_30px_rgba(0,0,0,0.05)] rounded-[2rem]">
+          <nav className="flex items-center overflow-x-auto no-scrollbar scroll-smooth px-1.5 h-16 scrollbar-hide">
+            <div className="flex items-center min-w-max mx-auto gap-0">
               {navItems.map((item) => (
                 <Link 
                   key={item.path} 
                   to={item.path} 
                   className={cn(
-                    "flex flex-col items-center justify-center min-w-[70px] px-1 h-16 gap-1 transition-all duration-300 relative rounded-2xl",
+                    "flex flex-col items-center justify-center min-w-[64px] px-0.5 h-14 gap-0.5 transition-all duration-300 relative rounded-xl",
                     isRouteActive(item.path) ? "text-blue-600" : "text-gray-400 group"
                   )}
                 >
                   <div className={cn(
-                    "p-2 rounded-xl transition-all duration-500 relative",
-                    isRouteActive(item.path) ? "bg-blue-600 shadow-lg shadow-blue-100 text-white -mt-4 scale-110" : "bg-transparent group-active:scale-90"
+                    "p-1.5 rounded-lg transition-all duration-500 relative",
+                    isRouteActive(item.path) ? "bg-blue-600 shadow-lg shadow-blue-100 text-white -mt-3 scale-105" : "bg-transparent group-active:scale-90"
                   )}>
-                    <item.icon className={cn("w-5 h-5", isRouteActive(item.path) ? "stroke-[2.5]" : "stroke-2")} />
+                    <item.icon className={cn("w-4.5 h-4.5", isRouteActive(item.path) ? "stroke-[2.5]" : "stroke-2")} />
                     
                     {item.badge !== undefined && item.badge !== null && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white">
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[7px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center border border-white">
                         {item.badge}
                       </span>
                     )}
                   </div>
                   <span className={cn(
-                    "text-[10px] tracking-tight transition-all duration-300 uppercase font-black",
-                    isRouteActive(item.path) ? "scale-100 opacity-100 mt-2" : "scale-90 opacity-80"
+                    "text-[9px] tracking-tight transition-all duration-300 uppercase font-black",
+                    isRouteActive(item.path) ? "scale-100 opacity-100 mt-1" : "scale-90 opacity-80"
                   )}>
                     {item.label}
                   </span>

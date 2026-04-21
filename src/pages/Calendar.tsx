@@ -159,18 +159,18 @@ export default function Calendar() {
     <div className="w-full max-w-2xl mx-auto min-h-full pb-20 animate-in fade-in duration-500">
       
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter text-gray-900 leading-none">
+          <h1 className="text-3xl font-black tracking-tighter text-gray-900 leading-none">
             {format(currentDate, 'MMMM')}
           </h1>
-          <p className="text-gray-400 font-bold mt-1 uppercase tracking-widest text-sm">
+          <p className="text-gray-400 font-bold mt-0.5 uppercase tracking-widest text-[10px]">
             {format(currentDate, 'yyyy')}
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-between w-full md:w-auto gap-3">
+        <div className="flex flex-wrap items-center justify-between w-full md:w-auto gap-2">
           <Select value={calendarView} onValueChange={(v: any) => setCalendarView(v)}>
-            <SelectTrigger className="w-[110px] h-10 rounded-xl border-gray-100 bg-white shadow-sm font-bold text-xs">
+            <SelectTrigger className="w-[100px] h-9 rounded-xl border-gray-100 bg-white shadow-sm font-bold text-[10px]">
               <SelectValue placholder="View" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
@@ -182,49 +182,46 @@ export default function Calendar() {
             </SelectContent>
           </Select>
           
-          <div className="flex items-center gap-1 bg-white p-1 rounded-2xl border border-gray-100 shadow-sm">
-            <Button variant="ghost" size="icon" onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="rounded-xl w-9 h-9 hover:bg-gray-100"><ChevronLeft className="w-5 h-5"/></Button>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentDate(new Date())} className="rounded-xl px-4 h-9 hover:bg-gray-100 font-bold text-xs text-blue-600">Today</Button>
-            <Button variant="ghost" size="icon" onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="rounded-xl w-9 h-9 hover:bg-gray-100"><ChevronRight className="w-5 h-5"/></Button>
+          <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-gray-100 shadow-sm">
+            <Button variant="ghost" size="icon" onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="rounded-lg w-8 h-8 hover:bg-gray-100"><ChevronLeft className="w-4 h-4"/></Button>
+            <Button variant="ghost" size="sm" onClick={() => setCurrentDate(new Date())} className="rounded-lg px-3 h-8 hover:bg-gray-100 font-bold text-[10px] text-blue-600">Today</Button>
+            <Button variant="ghost" size="icon" onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="rounded-lg w-8 h-8 hover:bg-gray-100"><ChevronRight className="w-4 h-4"/></Button>
           </div>
         </div>
       </div>
 
       {calendarView === 'month' && (
-        <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-100 border border-gray-100 p-6 sm:p-8 mb-8 animate-in slide-in-from-bottom-4 duration-500">
-          <div className="grid grid-cols-7 gap-y-6 gap-x-2">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="grid grid-cols-7 gap-y-3 gap-x-1">
             {['S','M','T','W','T','F','S'].map((d,i) => (
-              <div key={i} className="text-center text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">{d}</div>
+              <div key={i} className="text-center text-[9px] font-black text-gray-300 uppercase tracking-widest mb-2">{d}</div>
             ))}
             {daysInMonth.map((day, i) => {
               const isSelected = isSameDay(day, selectedDate);
               const isToday = isSameDay(day, new Date());
               const dayTasks = tasksByDate[day.toDateString()] || [];
               const dayEvents = events.filter(e => isSameDay(new Date(e.date), day));
-              const dayReminders = reminders.filter(r => isSameDay(new Date(r.date), day));
               const dayMeetings = meetings.filter(m => isSameDay(new Date(m.date), day));
               
-              const totalItems = dayTasks.length + dayEvents.length + dayReminders.length + dayMeetings.length;
-
               return (
-                <div key={i} className="flex flex-col items-center justify-start h-14 relative group">
+                <div key={i} className="flex flex-col items-center justify-start h-12 relative group">
                   <button 
                     onClick={() => handleDateClick(day)}
                     className={cn(
-                      "w-10 h-10 rounded-2xl flex items-center justify-center text-sm transition-all duration-300 active:scale-90",
+                      "w-8 h-8 rounded-xl flex items-center justify-center text-xs transition-all duration-300 active:scale-95",
                       isSelected 
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 font-black scale-110' 
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-100 font-black scale-105' 
                         : isToday 
-                          ? 'bg-blue-50 text-blue-600 font-black border border-blue-100 ring-2 ring-blue-50' 
+                          ? 'bg-blue-50 text-blue-600 font-black border border-blue-100' 
                           : 'text-gray-700 hover:bg-gray-50 font-bold'
                     )}
                   >
                     {format(day, 'd')}
                   </button>
-                  <div className="flex gap-1 mt-1.5 h-1 items-center">
-                    {dayTasks.length > 0 && <div className="w-1 h-1 rounded-full bg-blue-500" />}
-                    {dayEvents.length > 0 && <div className="w-1 h-1 rounded-full bg-orange-500" />}
-                    {dayMeetings.length > 0 && <div className="w-1 h-1 rounded-full bg-purple-500" />}
+                  <div className="flex gap-0.5 mt-1 h-0.5 items-center">
+                    {dayTasks.length > 0 && <div className="w-0.5 h-0.5 rounded-full bg-blue-500" />}
+                    {dayEvents.length > 0 && <div className="w-0.5 h-0.5 rounded-full bg-orange-500" />}
+                    {dayMeetings.length > 0 && <div className="w-0.5 h-0.5 rounded-full bg-purple-500" />}
                   </div>
                 </div>
               )
