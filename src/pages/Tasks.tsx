@@ -8,6 +8,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Button } from '../components/ui/button';
 import { Plus, GripVertical, CheckCircle2, Circle, ChevronDown, ChevronRight, Search, Calendar as CalendarIcon, Tag, Sparkles, Clock, AlertCircle, PlaySquare, CheckSquare, Settings2, BarChart3, LayoutGrid } from 'lucide-react';
 import { Input } from '../components/ui/input';
+import { cn } from '../lib/utils';
 import { format, isSameDay, isBefore } from 'date-fns';
 import confetti from 'canvas-confetti';
 import { TaskModal } from '../components/tasks/TaskModal';
@@ -222,10 +223,10 @@ export default function Tasks() {
          initialData={editingTask} 
       />
 
-      {/* DASHBOARD HEADER */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6">
-        <h1 className="text-3xl font-black tracking-tight text-gray-900 mb-2">Good morning, {user?.displayName?.split(' ')[0] || 'User'}!</h1>
-        <p className="text-gray-500 font-medium mb-6">Let's make today productive. You have <strong className="text-blue-600">{pendingCount}</strong> tasks pending.</p>
+      {/* DASHBOARD HEADER - Improved for mobile */}
+      <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 mb-6 hidden md:block">
+        <h1 className="text-3xl font-black tracking-tight text-gray-900 mb-2">Tasks Overview</h1>
+        <p className="text-gray-500 font-medium mb-6">Manage your daily priorities efficiently.</p>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex flex-col items-start">
@@ -252,53 +253,67 @@ export default function Tasks() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
-        {/* SMART LISTS SIDEBAR */}
-        <div className="md:w-64 shrink-0 space-y-1">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 ml-2">Smart Lists</h3>
-          {SMART_LISTS.map(list => (
-            <button 
-              key={list}
-              onClick={() => setActiveList(list)}
-              className={`w-full text-left px-4 py-3 rounded-2xl font-semibold transition-all flex justify-between items-center ${activeList === list ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}`}
-            >
-              <span>{list}</span>
-            </button>
-          ))}
-          <div className="pt-4">
-             <Button variant="ghost" className="w-full justify-start text-blue-600 hover:text-blue-700 hover:bg-blue-50">
-               <Plus className="w-4 h-4 mr-2" /> Add Custom List
-             </Button>
+        {/* SMART LISTS - Horizontal on mobile, sidebar on desktop */}
+        <div className="md:w-64 shrink-0 overflow-visible">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 ml-2 hidden md:block">Smart Lists</h3>
+          <div className="flex md:flex-col gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0 scroll-smooth">
+            {SMART_LISTS.map(list => (
+              <button 
+                key={list}
+                onClick={() => setActiveList(list)}
+                className={cn(
+                  "whitespace-nowrap px-5 py-3 rounded-2xl font-bold transition-all flex items-center group active:scale-95",
+                  activeList === list 
+                    ? "bg-gray-900 text-white shadow-xl shadow-gray-200" 
+                    : "bg-white border border-gray-100 text-gray-500 hover:bg-gray-50 hover:text-gray-900 shadow-sm"
+                )}
+              >
+                <span>{list}</span>
+              </button>
+            ))}
           </div>
         </div>
 
         {/* MAIN TASK AREA */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">{activeList}</h2>
-            <Button onClick={() => setIsTaskModalOpen(true)} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4">
-               <Plus className="w-4 h-4 mr-2"/> Add Task
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-3xl font-black tracking-tight text-gray-900">{activeList}</h2>
+              <p className="text-sm font-medium text-gray-500">{activeTasks.length} tasks matching</p>
+            </div>
+            <Button onClick={() => setIsTaskModalOpen(true)} size="lg" className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-6 h-12 font-bold shadow-lg shadow-blue-100 hidden md:flex">
+               <Plus className="w-5 h-5 mr-2 stroke-[3]"/> Add Task
             </Button>
           </div>
 
           <div className="relative mb-6">
-        <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <Input 
-           placeholder="Search tasks..." 
-           value={search}
-           onChange={e => setSearch(e.target.value)}
-           className="pl-10 py-6 bg-white border-none shadow-sm rounded-2xl text-base"
-        />
-      </div>
+            <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Input 
+              placeholder="Search in your tasks..." 
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-12 h-14 bg-white border-none shadow-sm rounded-2xl text-base ring-1 ring-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
+            />
+          </div>
 
-      <div className="mt-8">
-        <form onSubmit={handleAddTask} className="mb-4">
-          <Input 
-            placeholder="+ Add a new task (press Enter)" 
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            className="py-6 bg-white shadow-sm border-dashed border-2 border-gray-200 rounded-2xl text-base focus-visible:ring-blue-600 focus-visible:border-blue-600"
-          />
-        </form>
+          <div className="mt-8 relative">
+            <form onSubmit={handleAddTask} className="mb-6">
+              <div className="relative">
+                <Input 
+                  placeholder="+ Add a new task..." 
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  className="h-16 bg-white shadow-md shadow-gray-100 border-2 border-transparent focus-visible:border-blue-500 rounded-2xl text-lg font-medium pl-6 pr-16 transition-all"
+                />
+                <button 
+                  type="submit" 
+                  disabled={!newTaskTitle.trim()}
+                  className="absolute right-3 top-3 w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-100 active:scale-95 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none transition-all"
+                >
+                   <Plus className="w-6 h-6 stroke-[3]" />
+                </button>
+              </div>
+            </form>
 
         <div className="flex gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-2xl mb-6 overflow-x-auto border border-blue-100 items-center scrollbar-hide">
           <div className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-2 shadow-sm">

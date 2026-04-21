@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTasksStore } from './store/tasksStore';
 
 export function useGlobalKeyboardShortcuts() {
   const navigate = useNavigate();

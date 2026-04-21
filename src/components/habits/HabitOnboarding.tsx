@@ -18,7 +18,7 @@ export function HabitOnboarding({ onComplete }: { onComplete: (selectedHabits: a
 
   return (
     <Dialog open={true}>
-      <DialogContent className="sm:max-w-[600px] pointer-events-auto" hideClose>
+      <DialogContent className="sm:max-w-[600px] pointer-events-auto" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle className="text-2xl text-center">Welcome to your Habit Tracker</DialogTitle>
           <DialogDescription className="text-center text-lg">

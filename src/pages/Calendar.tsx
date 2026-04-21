@@ -8,6 +8,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Label } from '../components/ui/label';
+import { cn } from '../lib/utils';
 import { useAuthStore } from '../store/authStore';
 import { TaskModal } from '../components/tasks/TaskModal';
 import { db } from '../firebase';
@@ -158,16 +159,21 @@ export default function Calendar() {
     <div className="w-full max-w-2xl mx-auto min-h-full pb-20 animate-in fade-in duration-500">
       
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-        <h1 className="text-4xl font-black tracking-tighter text-gray-900">
-          {format(currentDate, 'MMMM')} <span className="text-gray-300 font-medium">{format(currentDate, 'yyyy')}</span>
-        </h1>
-        <div className="flex items-center justify-between w-full md:w-auto gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
+        <div>
+          <h1 className="text-4xl font-black tracking-tighter text-gray-900 leading-none">
+            {format(currentDate, 'MMMM')}
+          </h1>
+          <p className="text-gray-400 font-bold mt-1 uppercase tracking-widest text-sm">
+            {format(currentDate, 'yyyy')}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-between w-full md:w-auto gap-3">
           <Select value={calendarView} onValueChange={(v: any) => setCalendarView(v)}>
-            <SelectTrigger className="w-[120px] rounded-xl border-gray-200">
+            <SelectTrigger className="w-[110px] h-10 rounded-xl border-gray-100 bg-white shadow-sm font-bold text-xs">
               <SelectValue placholder="View" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-xl">
               <SelectItem value="year">Year</SelectItem>
               <SelectItem value="month">Month</SelectItem>
               <SelectItem value="week">Week</SelectItem>
@@ -176,19 +182,19 @@ export default function Calendar() {
             </SelectContent>
           </Select>
           
-          <div className="flex gap-1 bg-white p-1 rounded-full border border-gray-100 shadow-sm">
-            <Button variant="ghost" size="icon" onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="rounded-full w-8 h-8 hover:bg-gray-100"><ChevronLeft className="w-5 h-5"/></Button>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentDate(new Date())} className="rounded-full px-4 hover:bg-gray-100 font-semibold text-gray-600">Today</Button>
-            <Button variant="ghost" size="icon" onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="rounded-full w-8 h-8 hover:bg-gray-100"><ChevronRight className="w-5 h-5"/></Button>
+          <div className="flex items-center gap-1 bg-white p-1 rounded-2xl border border-gray-100 shadow-sm">
+            <Button variant="ghost" size="icon" onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="rounded-xl w-9 h-9 hover:bg-gray-100"><ChevronLeft className="w-5 h-5"/></Button>
+            <Button variant="ghost" size="sm" onClick={() => setCurrentDate(new Date())} className="rounded-xl px-4 h-9 hover:bg-gray-100 font-bold text-xs text-blue-600">Today</Button>
+            <Button variant="ghost" size="icon" onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="rounded-xl w-9 h-9 hover:bg-gray-100"><ChevronRight className="w-5 h-5"/></Button>
           </div>
         </div>
       </div>
 
       {calendarView === 'month' && (
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-8">
-          <div className="grid grid-cols-7 gap-y-4 gap-x-2">
+        <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-100 border border-gray-100 p-6 sm:p-8 mb-8 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="grid grid-cols-7 gap-y-6 gap-x-2">
             {['S','M','T','W','T','F','S'].map((d,i) => (
-              <div key={i} className="text-center text-xs font-bold text-gray-400 mb-2">{d}</div>
+              <div key={i} className="text-center text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">{d}</div>
             ))}
             {daysInMonth.map((day, i) => {
               const isSelected = isSameDay(day, selectedDate);
@@ -204,23 +210,22 @@ export default function Calendar() {
                 <div key={i} className="flex flex-col items-center justify-start h-14 relative group">
                   <button 
                     onClick={() => handleDateClick(day)}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-all
-                      ${isSelected ? 'bg-blue-600 text-white shadow-md font-bold' : 
-                        isToday ? 'bg-blue-50 text-blue-600 font-bold border border-blue-100' :
-                        'text-gray-700 hover:bg-gray-50'}`}
+                    className={cn(
+                      "w-10 h-10 rounded-2xl flex items-center justify-center text-sm transition-all duration-300 active:scale-90",
+                      isSelected 
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 font-black scale-110' 
+                        : isToday 
+                          ? 'bg-blue-50 text-blue-600 font-black border border-blue-100 ring-2 ring-blue-50' 
+                          : 'text-gray-700 hover:bg-gray-50 font-bold'
+                    )}
                   >
                     {format(day, 'd')}
                   </button>
-                  <div className="flex gap-0.5 mt-1">
-                    {dayTasks.length > 0 && <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />}
-                    {dayEvents.length > 0 && <div className="w-1.5 h-1.5 rounded-full bg-orange-400" />}
-                    {dayMeetings.length > 0 && <div className="w-1.5 h-1.5 rounded-full bg-purple-400" />}
+                  <div className="flex gap-1 mt-1.5 h-1 items-center">
+                    {dayTasks.length > 0 && <div className="w-1 h-1 rounded-full bg-blue-500" />}
+                    {dayEvents.length > 0 && <div className="w-1 h-1 rounded-full bg-orange-500" />}
+                    {dayMeetings.length > 0 && <div className="w-1 h-1 rounded-full bg-purple-500" />}
                   </div>
-                  {totalItems > 3 && (
-                    <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                      {totalItems}
-                    </span>
-                  )}
                 </div>
               )
             })}
@@ -228,8 +233,10 @@ export default function Calendar() {
         </div>
       )}
 
-      <div className="py-8 text-center text-gray-400 text-sm font-semibold">
-        Tap any date to add tasks, events or reminders.
+      <div className="py-2 text-center">
+        <p className="text-gray-400 text-xs font-bold uppercase tracking-widest bg-gray-50 px-4 py-2 rounded-full inline-block">
+          Tap any date to plan your day
+        </p>
       </div>
 
       {/* ACTION SHEET */}

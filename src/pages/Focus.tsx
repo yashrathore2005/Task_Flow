@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
+import { cn } from '../lib/utils';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import confetti from 'canvas-confetti';
 
@@ -249,36 +250,46 @@ export default function Focus() {
   ];
 
   return (
-    <div ref={containerRef} className={`w-full max-w-5xl mx-auto min-h-full pb-20 animate-in fade-in duration-500 flex flex-col pt-4 ${isFullscreen ? 'bg-gray-100 p-8 justify-center items-center shadow-black/50 overflow-y-auto' : ''}`}>
+    <div ref={containerRef} className={`w-full max-w-5xl mx-auto min-h-full pb-20 animate-in fade-in duration-500 flex flex-col pt-4 px-2 sm:px-0 ${isFullscreen ? 'bg-gray-100 p-8 justify-center items-center shadow-black/50 overflow-y-auto' : ''}`}>
       
       {!isFullscreen && (
-        <div className="flex flex-wrap gap-2 justify-center bg-white rounded-full p-1.5 shadow-sm border border-gray-100 mb-8 self-center">
-          <button onClick={() => changeMode('pomodoro')} className={`px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-colors ${mode === 'pomodoro' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-900'}`}>Pomodoro</button>
-          <button onClick={() => changeMode('deep_work')} className={`px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-colors ${mode === 'deep_work' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-900'}`}>Deep Work</button>
-          <button onClick={() => changeMode('countdown')} className={`px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-colors ${mode === 'countdown' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-900'}`}>Countdown</button>
-          <button onClick={() => changeMode('stopwatch')} className={`px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-colors ${mode === 'stopwatch' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-900'}`}>Stopwatch</button>
+        <header className="mb-10 text-center sm:text-left">
+          <h1 className="text-4xl font-black tracking-tighter text-gray-900 leading-none">Focus</h1>
+          <p className="text-gray-400 font-bold mt-1 uppercase tracking-widest text-xs">Deep work sessions</p>
+        </header>
+      )}
+
+      {!isFullscreen && (
+        <div className="flex flex-wrap gap-2 justify-center bg-gray-100 p-1.5 rounded-2xl mb-12 self-center w-full sm:w-auto">
+          {['pomodoro', 'deep_work', 'countdown', 'stopwatch'].map((m) => (
+            <button 
+              key={m}
+              onClick={() => changeMode(m as any)} 
+              className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${mode === m ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              {m.replace('_',' ')}
+            </button>
+          ))}
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
-        <div className={`lg:col-span-2 bg-white rounded-[3rem] p-10 shadow-sm border border-gray-100 flex flex-col items-center relative overflow-hidden transition-all ${isFullscreen ? 'w-full max-w-3xl transform scale-105 shadow-lg mx-auto' : 'w-full'}`}>
-          <div onClick={toggleFullscreen} className="absolute top-6 right-6 text-gray-300 hover:text-gray-600 cursor-pointer transition-colors">
-            {isFullscreen ? <Minimize2 className="w-5 h-5"/> : <Maximize2 className="w-5 h-5" />}
+        <div className={`lg:col-span-2 bg-white rounded-[3.5rem] p-8 sm:p-12 shadow-sm border border-gray-100 flex flex-col items-center relative overflow-hidden transition-all ${isFullscreen ? 'w-full max-w-3xl transform scale-105 shadow-lg mx-auto' : 'w-full'}`}>
+          <div onClick={toggleFullscreen} className="absolute top-8 right-8 text-gray-300 hover:text-gray-600 cursor-pointer transition-colors z-10">
+            {isFullscreen ? <Minimize2 className="w-6 h-6"/> : <Maximize2 className="w-6 h-6" />}
           </div>
           
           <Popover>
-            <PopoverTrigger asChild>
-              <div className={`absolute top-6 left-6 cursor-pointer transition-colors ${sound !== 'none' ? 'text-blue-500' : 'text-gray-300 hover:text-gray-600'}`}>
-                {sound === 'none' ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-              </div>
+            <PopoverTrigger className={`absolute top-8 left-8 cursor-pointer transition-colors border-none bg-transparent z-10 ${sound !== 'none' ? 'text-blue-500' : 'text-gray-300 hover:text-gray-600'}`}>
+              {sound === 'none' ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
             </PopoverTrigger>
             <PopoverContent className="w-56 p-2 rounded-2xl border-gray-100 shadow-xl" align="start">
-              <h4 className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-2 px-2">Ambient Sounds</h4>
+              <h4 className="font-black text-[10px] text-gray-400 uppercase tracking-widest mb-2 px-2">Ambient Sounds</h4>
               <div className="space-y-1">
                 {SOUNDS.map(s => {
                   const Icon = s.icon;
                   return (
-                    <button key={s.id} onClick={() => setSound(s.id)} className={`nav-link w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${sound === s.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+                    <button key={s.id} onClick={() => setSound(s.id)} className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-colors ${sound === s.id ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-900'}`}>
                       <Icon className="w-4 h-4" />{s.label}
                     </button>
                   )
@@ -288,102 +299,112 @@ export default function Focus() {
           </Popover>
 
           {isConfiguring ? (
-            <div className="w-full flex flex-col items-center flex-1 animate-in slide-in-from-bottom-4 fade-in">
-               <h3 className="text-xl font-bold mb-6">Session Settings</h3>
-               <div className="w-full max-w-sm space-y-6">
+            <div className="w-full flex flex-col items-center flex-1 animate-in slide-in-from-bottom-4 fade-in py-10">
+               <h3 className="text-2xl font-black mb-8 text-gray-900">Session Setup</h3>
+               <div className="w-full max-w-sm space-y-8">
                  {(mode === 'pomodoro' || mode === 'deep_work') && (
-                   <div>
-                     <label className="text-sm font-semibold text-gray-500 mb-2 block">Number of Sessions</label>
-                     <div className="flex gap-2">
+                   <div className="space-y-3">
+                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Number of Sessions</label>
+                     <div className="flex gap-3">
                        {[1, 2, 4, 8].map(n => (
-                         <button key={n} onClick={() => setSessionCount(n)} className={`flex-1 py-2 text-sm font-bold rounded-xl transition-colors ${sessionCount === n ? 'bg-blue-100 text-blue-700' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}>{n}</button>
+                         <button key={n} onClick={() => setSessionCount(n)} className={`flex-1 py-3 text-sm font-black rounded-2xl transition-all ${sessionCount === n ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}>{n}</button>
                        ))}
                      </div>
                    </div>
                  )}
-                 <div>
-                   <label className="text-sm font-semibold text-gray-500 mb-2 block">Work Duration (mins)</label>
-                   <Input type="number" min={1} max={180} value={sessionDuration} onChange={(e) => { setSessionDuration(Number(e.target.value)); setTimeLeft(Number(e.target.value)*60); }} className="rounded-xl text-lg font-bold text-center" />
+                 <div className="space-y-3">
+                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Work duration (mins)</label>
+                   <Input type="number" min={1} max={180} value={sessionDuration} onChange={(e) => { setSessionDuration(Number(e.target.value)); setTimeLeft(Number(e.target.value)*60); }} className="h-16 rounded-2xl bg-gray-50 border-none font-black text-2xl text-center focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all" />
                  </div>
                  {(mode === 'pomodoro' || mode === 'deep_work') && (
-                   <div>
-                     <label className="text-sm font-semibold text-gray-500 mb-2 block">Break Duration (mins)</label>
-                     <Input type="number" min={1} max={60} value={breakDuration} onChange={(e) => setBreakDuration(Number(e.target.value))} className="rounded-xl text-lg font-bold text-center" />
+                   <div className="space-y-3">
+                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Break duration (mins)</label>
+                     <Input type="number" min={1} max={60} value={breakDuration} onChange={(e) => setBreakDuration(Number(e.target.value))} className="h-16 rounded-2xl bg-gray-50 border-none font-black text-2xl text-center focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all" />
                    </div>
                  )}
-                 {(mode === 'pomodoro' || mode === 'deep_work') && (
-                    <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl">
-                      <span className="font-semibold text-gray-700 text-sm">Auto-start next phase</span>
-                      <button onClick={() => setAutoStartNext(!autoStartNext)} className={`w-12 h-6 rounded-full transition-colors relative ${autoStartNext ? 'bg-blue-500' : 'bg-gray-300'}`}>
-                        <span className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${autoStartNext ? 'left-6' : 'left-0.5'}`} />
-                      </button>
-                    </div>
-                 )}
                </div>
-               <Button onClick={() => setIsConfiguring(false)} className="mt-8 rounded-full px-8 py-6 text-lg font-bold bg-gray-900 text-white">Done</Button>
+               <Button onClick={() => setIsConfiguring(false)} className="mt-12 rounded-2xl px-12 h-14 text-lg font-bold bg-gray-900 text-white hover:bg-gray-800 shadow-xl transition-all active:scale-95">Set Configurations</Button>
             </div>
           ) : (
             <>
-              <div className="absolute top-6 right-16 text-gray-300 hover:text-gray-600 cursor-pointer transition-colors" onClick={() => setIsConfiguring(true)}>
-                <Settings className="w-5 h-5"/>
+              <div className="absolute top-8 right-20 text-gray-300 hover:text-gray-600 cursor-pointer transition-colors z-10" onClick={() => setIsConfiguring(true)}>
+                <Settings className="w-6 h-6"/>
               </div>
-              <p className={`font-bold uppercase tracking-widest text-sm mb-6 mt-4 ${isBreak ? 'text-orange-500' : 'text-gray-400'}`}>
-                {mode === 'stopwatch' ? 'Track Time' : mode === 'countdown' ? 'Countdown' : isBreak ? `BREAK TIME (${currentSession}/${sessionCount})` : `${mode.replace('_',' ')} SESSION (${currentSession}/${sessionCount})`}
-              </p>
+              <div className="flex flex-col items-center mt-4">
+                <p className={cn(
+                  "font-black uppercase tracking-[0.3em] text-[10px] mb-2 px-3 py-1 rounded-full",
+                  isBreak ? 'text-orange-500 bg-orange-50' : 'text-blue-600 bg-blue-50'
+                )}>
+                  {mode === 'stopwatch' ? 'Stopwatch' : mode === 'countdown' ? 'Countdown' : isBreak ? `Break ${currentSession}/${sessionCount}` : `${mode.replace('_',' ')} ${currentSession}/${sessionCount}`}
+                </p>
+                <h4 className="text-sm font-bold text-gray-400 mb-12">Level Up Your Focus</h4>
+              </div>
 
-              <div className={`w-64 h-64 sm:w-80 sm:h-80 border-[8px] flex items-center justify-center rounded-full mb-10 shadow-inner relative transition-all ${isFullscreen ? 'scale-110 my-12' : ''} ${isBreak ? 'border-orange-50' : 'border-blue-50'}`}>
-                <div className={`absolute inset-0 rounded-full border-[8px] border-t-transparent animate-[spin_3s_linear_infinite] ${isBreak ? 'border-orange-500' : 'border-blue-600'}`} style={{ animationPlayState: isActive ? 'running' : 'paused', opacity: isActive ? 1 : 0 }}/>
-                <span className={`text-[4rem] sm:text-[5rem] font-black tracking-tighter tabular-nums ${isActive ? (isBreak ? 'text-orange-500' : 'text-blue-600') : 'text-gray-900'}`}>
+              <div className={cn(
+                "w-72 h-72 sm:w-80 sm:h-80 border-[12px] flex items-center justify-center rounded-full mb-16 shadow-inner relative transition-all duration-700",
+                isFullscreen ? 'scale-110 my-12' : '',
+                isBreak ? 'border-orange-50' : 'border-blue-50'
+              )}>
+                <div className={cn(
+                  "absolute inset-0 rounded-full border-[12px] border-t-transparent animate-[spin_4s_linear_infinite] opacity-0 transition-opacity duration-1000",
+                  isActive && "opacity-100",
+                  isBreak ? 'border-orange-500' : 'border-blue-600'
+                )} style={{ animationPlayState: isActive ? 'running' : 'paused' }}/>
+                <span className={cn(
+                  "text-[5rem] sm:text-[6rem] font-black tracking-tighter tabular-nums transition-colors duration-700",
+                  isActive ? (isBreak ? 'text-orange-500' : 'text-blue-600') : 'text-gray-900'
+                )}>
                   {mode !== 'stopwatch' ? formatTime(timeLeft) : formatMs(elapsedTime).slice(0,5)}
                 </span>
                 {mode === 'stopwatch' && (
-                  <span className="absolute bottom-12 text-sm sm:text-base font-bold text-gray-400 tabular-nums">.{formatMs(elapsedTime).slice(-2)}</span>
+                  <span className="absolute bottom-16 text-sm sm:text-lg font-black text-gray-300 tabular-nums uppercase tracking-widest tracking-tighter">.{formatMs(elapsedTime).slice(-2)}</span>
                 )}
               </div>
 
-              <div className="flex flex-col items-center">
-                <div className="flex justify-center flex-wrap gap-4 w-full mb-6 relative">
+              <div className="flex flex-col items-center w-full max-w-md">
+                <div className="flex justify-center flex-wrap gap-8 w-full mb-10 relative">
                   {isActive ? (
-                    <Button size="icon" onClick={toggleTimer} className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200">
-                      <Pause className="w-6 h-6 fill-current" />
+                    <Button size="icon" onClick={toggleTimer} className="w-20 h-20 rounded-[2rem] bg-orange-50 text-orange-600 hover:bg-orange-100 shadow-sm border border-orange-100 transition-all active:scale-90">
+                      <Pause className="w-8 h-8 fill-current" />
                     </Button>
                   ) : (
-                    <Button size="icon" onClick={toggleTimer} className="w-16 h-16 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg">
-                      <Play className="w-6 h-6 fill-current ml-1" />
+                    <Button size="icon" onClick={toggleTimer} className="w-20 h-20 rounded-[2rem] bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-100 transition-all active:scale-90">
+                      <Play className="w-8 h-8 fill-current ml-1" />
                     </Button>
                   )}
 
                   {mode === 'stopwatch' && isActive ? (
-                    <Button size="icon" onClick={addLap} className="w-16 h-16 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">
-                      <RefreshCcw className="w-6 h-6" />
+                    <Button size="icon" onClick={addLap} className="w-20 h-20 rounded-[2rem] bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-100 transition-all active:scale-90">
+                      <RefreshCcw className="w-8 h-8" />
                     </Button>
                   ) : (
-                    <Button size="icon" onClick={resetTimer} className="w-16 h-16 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">
-                      <Square className="w-6 h-6 fill-current" />
+                    <Button size="icon" onClick={resetTimer} className="w-20 h-20 rounded-[2rem] bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-100 transition-all active:scale-90">
+                      <Square className="w-8 h-8 fill-current" />
                     </Button>
                   )}
 
                   {isBreak && (
-                    <Button size="icon" onClick={skipBreak} className="w-16 h-16 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200" title="Skip Break">
-                      <SkipForward className="w-6 h-6" />
-                    </Button>
-                  )}
-
-                  {(!isActive && (elapsedTime > 0 || (mode !== 'stopwatch' && timeLeft < (mode === 'deep_work' ? sessionDuration*60 : mode==='pomodoro' ? sessionDuration*60 : sessionDuration*60)))) && (
-                    <Button size="icon" onClick={() => handleSessionSave()} className="w-16 h-16 rounded-full bg-green-100 text-green-600 hover:bg-green-200">
-                      <Save className="w-6 h-6" />
+                    <Button size="icon" onClick={skipBreak} className="w-20 h-20 rounded-[2rem] bg-gray-50 text-gray-400 hover:text-gray-900 border border-gray-100 transition-all active:scale-90" title="Skip Break">
+                      <SkipForward className="w-8 h-8" />
                     </Button>
                   )}
                 </div>
 
-                {isActive && !isBreak && (
-                   <Button variant="outline" onClick={logDistraction} className="rounded-full border-dashed text-gray-500 hover:text-red-500 hover:bg-red-50 hover:border-red-200 mt-2">
-                     <AlertCircle className="w-4 h-4 mr-2" /> Log Distraction ({distractions})
-                   </Button>
-                )}
-                {isBreak && (
-                  <p className="text-gray-400 font-medium text-sm mt-4 animate-pulse">Good job! Take a moment to relax.</p>
-                )}
+                <div className="h-12 flex items-center justify-center">
+                  {isActive && !isBreak && (
+                     <button onClick={logDistraction} className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-red-50 text-red-600 font-black text-[10px] uppercase tracking-widest hover:bg-red-100 transition-all active:scale-95">
+                       <AlertCircle className="w-4 h-4" /> Distractions: {distractions}
+                     </button>
+                  )}
+                  {isBreak && (
+                    <p className="text-orange-500 font-black text-[10px] uppercase tracking-[0.2em] animate-pulse">Recharge in progress...</p>
+                  )}
+                  {!isActive && (elapsedTime > 0 || (mode !== 'stopwatch' && timeLeft < sessionDuration*60)) && (
+                    <Button onClick={() => handleSessionSave()} className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest text-xs h-12 px-8 shadow-lg shadow-emerald-50 active:scale-95">
+                      <Save className="w-4 h-4 mr-2" /> Finish Session
+                    </Button>
+                  )}
+                </div>
               </div>
             </>
           )}

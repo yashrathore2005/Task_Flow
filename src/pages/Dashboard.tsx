@@ -1,24 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useTasksStore } from '../store/tasksStore';
+import { useHabitsStore } from '../store/habitsStore';
+import { useMoodStore } from '../store/moodStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { CheckCircle2, Clock, Calendar as CalendarIcon, Flame, Target, Zap, Timer, CheckSquare, Download, Palette, Activity } from 'lucide-react';
-import { format, differenceInDays } from 'date-fns';
+import { CheckCircle2, Clock, Calendar as CalendarIcon, Flame, Target, Zap, Timer, CheckSquare, Download, Palette, Activity, Smile, Frown, Meh, Star } from 'lucide-react';
+import { format, differenceInDays, isToday, subDays } from 'date-fns';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Countdown } from './Countdowns';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '../lib/utils';
+import { CompletedTasksModal } from '../components/dashboard/CompletedTasksModal';
+import { MoodTrackerModal } from '../components/dashboard/MoodTrackerModal';
+import { HabitDetailsModal } from '../components/dashboard/HabitDetailsModal';
+import { OnboardingFlow } from '../components/onboarding/OnboardingFlow';
 
 export default function Dashboard() {
   const { user } = useAuthStore();
-  const { tasks, subscribe, loading } = useTasksStore();
+  const { tasks, subscribe: subscribeTasks, loading: tasksLoading } = useTasksStore();
+  const { habits, subscribe: subscribeHabits, loading: habitsLoading } = useHabitsStore();
+  const { moods, subscribe: subscribeMoods, loading: moodsLoading } = useMoodStore();
+  
   const [countdowns, setCountdowns] = useState<Countdown[]>([]);
   const [focusMinutes, setFocusMinutes] = useState(0);
+  const [showCompletedModal, setShowCompletedModal] = useState(false);
+  const [showMoodModal, setShowMoodModal] = useState(false);
+  const [showHabitModal, setShowHabitModal] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (user?.uid) {
-      const unsubscribeTasks = subscribe(user.uid);
+      const unsubTasks = subscribeTasks(user.uid);
+      const unsubHabits = subscribeHabits(user.uid);
+      const unsubMoods = subscribeMoods(user.uid);
       
       const qCountdowns = query(collection(db, 'countdowns'), where('userId', '==', user.uid));
       const unsubscribeCountdowns = onSnapshot(qCountdowns, (snapshot) => {
@@ -39,109 +55,164 @@ export default function Dashboard() {
         setFocusMinutes(mins);
       });
 
-      return () => { unsubscribeTasks(); unsubscribeCountdowns(); unsubscribeFocus(); };
-    }
-  }, [user?.uid, subscribe]);
+      // Check onboarding
+      if (!localStorage.getItem('onboardingComplete')) {
+        setShowOnboarding(true);
+      }
 
-  const taskStats = {
+      return () => { 
+        unsubTasks(); 
+        unsubHabits(); 
+        unsubMoods(); 
+        unsubscribeCountdowns(); 
+        unsubscribeFocus(); 
+      };
+    }
+  }, [user?.uid, subscribeTasks, subscribeHabits, subscribeMoods]);
+
+  const taskStats = useMemo(() => ({
     completed: tasks.filter(t => t.status === 'completed').length,
     pending: tasks.filter(t => t.status !== 'completed').length,
+    completedToday: tasks.filter(t => t.status === 'completed' && isToday(t.updatedAt || t.createdAt)).length,
     total: tasks.length
-  };
+  }), [tasks]);
+
   const completionRate = taskStats.total === 0 ? 0 : Math.round((taskStats.completed / taskStats.total) * 100);
 
-  const weeklyData = [
-    { name: 'Mon', focus: 45, tasks: 4 },
-    { name: 'Tue', focus: 90, tasks: 7 },
-    { name: 'Wed', focus: 30, tasks: 5 },
-    { name: 'Thu', focus: 120, tasks: 8 },
-    { name: 'Fri', focus: 60, tasks: 3 },
-    { name: 'Sat', focus: 15, tasks: 6 },
-    { name: 'Sun', focus: focusMinutes, tasks: taskStats.completed },
-  ];
+  const habitStats = useMemo(() => {
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const total = habits.length;
+    const completed = habits.filter(h => h.logs.includes(todayStr)).length;
+    return {
+      total,
+      completed,
+      percent: total > 0 ? Math.round((completed / total) * 100) : 0
+    };
+  }, [habits]);
 
-  const pieData = [
-    { name: 'Personal', value: 40, color: '#3b82f6' },
-    { name: 'Work', value: 30, color: '#f59e0b' },
-    { name: 'Study', value: 30, color: '#10b981' },
-  ];
+  const latestMood = moods[0];
 
-  const quotes = [
-    "Focus on being productive instead of busy.",
-    "The secret of getting ahead is getting started.",
-    "Small consistent steps lead to massive results.",
-    "Your future is created by what you do today."
-  ];
+  const weeklyData = useMemo(() => {
+    return [6, 5, 4, 3, 2, 1, 0].map(daysBack => {
+       const date = subDays(new Date(), daysBack);
+       const dateStr = format(date, 'yyyy-MM-dd');
+       const label = format(date, 'EEE');
+       
+       const dailyCompletedTasks = tasks.filter(t => t.status === 'completed' && format(t.updatedAt || t.createdAt, 'yyyy-MM-dd') === dateStr).length;
+       // Mock focus for old days since we don't have a full history store yet, but use real for today
+       const focusValue = daysBack === 0 ? focusMinutes : (Math.random() * 60 + 20); 
+       
+       return { name: label, focus: Math.round(focusValue), tasks: dailyCompletedTasks };
+    });
+  }, [tasks, focusMinutes]);
 
-  const habitHeatmap = Array.from({length: 28}).map((_, i) => Math.random() > 0.3 ? Math.floor(Math.random() * 4) + 1 : 0);
+  const pieData = useMemo(() => {
+    const categories = Array.from(new Set(tasks.map(t => t.listId || 'Inbox')));
+    return categories.map(cat => ({
+      name: cat,
+      value: tasks.filter(t => (t.listId || 'Inbox') === cat).length,
+      color: '#' + Math.floor(Math.random()*16777215).toString(16) // Random enough for now
+    })).slice(0, 5);
+  }, [tasks]);
+
+  const habitHeatmap = useMemo(() => {
+     return Array.from({length: 28}).map((_, i) => {
+        const date = subDays(new Date(), 27 - i);
+        const dateStr = format(date, 'yyyy-MM-dd');
+        return habits.filter(h => h.logs.includes(dateStr)).length;
+     });
+  }, [habits]);
+
+  const emptyState = tasks.length === 0 && habits.length === 0;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 max-w-[1200px] mx-auto pb-20 p-4 sm:p-0">
-      
+      <CompletedTasksModal isOpen={showCompletedModal} onClose={() => setShowCompletedModal(false)} />
+      <MoodTrackerModal isOpen={showMoodModal} onClose={() => setShowMoodModal(false)} />
+      <HabitDetailsModal isOpen={showHabitModal} onClose={() => setShowHabitModal(false)} />
+      <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
+
       {/* HEADER SECTION */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-200">
-        <div>
-          <div className="flex items-center gap-4 mb-3">
-             <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors shadow-sm">
-                <Download className="w-3.5 h-3.5" /> Export Report
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-100">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+             <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-100 text-xs font-bold text-gray-500 hover:text-gray-900 transition-all shadow-sm active:scale-95">
+                <Download className="w-4 h-4 text-blue-600" /> <span className="hidden sm:inline">Export Report</span><span className="sm:hidden">Export</span>
              </button>
              <button 
                onClick={() => document.documentElement.classList.toggle('dark')}
-               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors shadow-sm"
+               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-100 text-xs font-bold text-gray-500 hover:text-gray-900 transition-all shadow-sm active:scale-95"
              >
-                <Palette className="w-3.5 h-3.5" /> Theme
+                <Palette className="w-4 h-4 text-purple-600" /> <span className="hidden sm:inline">Change Theme</span><span className="sm:hidden">Theme</span>
              </button>
           </div>
-          <h1 className="text-4xl font-black tracking-tight text-gray-900 leading-tight dark:text-white">
-            Good morning,<br/>
-            <span className="text-blue-600">{user?.displayName?.split(' ')[0] || user?.email?.split('@')[0]}</span>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-gray-900 leading-tight dark:text-white">
+            Hello, <span className="text-blue-600">{user?.displayName?.split(' ')[0] || user?.email?.split('@')[0]}</span>
           </h1>
-          <p className="text-gray-500 mt-2 font-medium bg-gray-100 px-3 py-1 rounded-full inline-block text-sm">
-            {format(new Date(), 'EEEE, MMMM do, yyyy')}
-          </p>
-          <p className="text-gray-600 mt-4 italic max-w-md border-l-2 border-blue-600 pl-4 text-sm font-serif">
-            "{quotes[new Date().getDay() % quotes.length]}"
-          </p>
-        </div>
-        <div className="flex gap-4">
-          <div className="bg-white border border-gray-200 px-5 py-3 rounded-2xl shadow-sm text-sm flex flex-col items-end">
-            <span className="text-gray-500 font-semibold mb-1 flex items-center gap-1"><Timer className="w-4 h-4"/> Focus Time Today</span>
-            <span className="font-black text-2xl text-gray-900">{Math.floor(focusMinutes/60)}h {focusMinutes%60}m</span>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-gray-500 font-bold bg-white border border-gray-100 px-3 py-1.5 rounded-xl text-xs shadow-sm">
+              {format(new Date(), 'EEEE, MMMM do')}
+            </span>
+            <span className="text-blue-600 font-bold bg-blue-50 px-3 py-1.5 rounded-xl text-xs">
+              {taskStats.pending} tasks pending
+            </span>
           </div>
-          <div className="bg-white border border-gray-200 px-5 py-3 rounded-2xl shadow-sm text-sm flex flex-col items-end">
-            <span className="text-gray-500 font-semibold mb-1 flex items-center gap-1"><CheckSquare className="w-4 h-4"/> Tasks Done</span>
-            <span className="font-black text-2xl text-gray-900">{taskStats.completed}/{taskStats.total}</span>
+        </div>
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+          <div onClick={() => navigate('/focus')} className="cursor-pointer group active:scale-95 transition-all bg-white border border-gray-100 px-5 py-4 rounded-3xl shadow-sm text-sm flex flex-col min-w-[140px] border-b-4 border-b-blue-600">
+            <span className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-2 flex items-center gap-1"><Timer className="w-3.5 h-3.5"/> Focus Today</span>
+            <span className="font-black text-2xl text-gray-900 leading-none group-hover:text-blue-600 transition-colors">{Math.floor(focusMinutes/60)}h {focusMinutes%60}m</span>
+          </div>
+          <div onClick={() => setShowCompletedModal(true)} className="cursor-pointer group active:scale-95 transition-all bg-white border border-gray-100 px-5 py-4 rounded-3xl shadow-sm text-sm flex flex-col min-w-[140px] border-b-4 border-b-green-500">
+            <span className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-2 flex items-center gap-1"><CheckSquare className="w-3.5 h-3.5"/> Tasks Done</span>
+            <span className="font-black text-2xl text-gray-900 leading-none group-hover:text-green-600 transition-colors">{taskStats.completed}/{taskStats.total}</span>
           </div>
         </div>
       </header>
 
+      {emptyState && !tasksLoading && (
+        <div className="p-12 text-center bg-white rounded-[3rem] border border-dashed border-gray-200">
+            <div className="w-20 h-20 rounded-[2rem] bg-blue-50 flex items-center justify-center text-blue-600 mx-auto mb-8">
+               <Star className="w-10 h-10 fill-blue-600" />
+            </div>
+            <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">Your clean slate awaits</h2>
+            <p className="text-gray-400 font-bold uppercase tracking-widest text-xs mb-8 italic">No tasks, no habits, just endless possibilities</p>
+            <div className="flex justify-center gap-4">
+               <button onClick={() => navigate('/tasks')} className="px-8 h-14 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-100">Add First Task</button>
+               <button onClick={() => navigate('/habits')} className="px-8 h-14 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs">Build Habits</button>
+            </div>
+        </div>
+      )}
+
       {/* KPI GRID */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        <div onClick={() => navigate('/analytics')} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-blue-200 hover:shadow-md transition-all">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Zap className="w-16 h-16"/></div>
-          <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Efficiency</p>
-          <h3 className="text-4xl font-black text-blue-600">{completionRate}%</h3>
-          <p className="text-xs text-gray-400 mt-2 font-medium">Task completion rate</p>
+      {!emptyState && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div onClick={() => navigate('/analytics')} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-blue-200 hover:shadow-md transition-all">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Zap className="w-16 h-16"/></div>
+            <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Efficiency</p>
+            <h3 className="text-4xl font-black text-blue-600">{completionRate}%</h3>
+            <p className="text-xs text-gray-400 mt-2 font-medium">Task completion rate</p>
+          </div>
+          <div onClick={() => setShowCompletedModal(true)} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-orange-200 hover:shadow-md transition-all">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Flame className="w-16 h-16 text-orange-500"/></div>
+            <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Today Done</p>
+            <h3 className="text-4xl font-black text-orange-500">{taskStats.completedToday}</h3>
+            <p className="text-xs text-gray-400 mt-2 font-medium">Archived today</p>
+          </div>
+          <div onClick={() => setShowHabitModal(true)} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-green-200 hover:shadow-md transition-all">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Target className="w-16 h-16 text-green-500"/></div>
+            <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Habits</p>
+            <h3 className="text-4xl font-black text-green-600">{habitStats.percent}%</h3>
+            <p className="text-xs text-gray-400 mt-2 font-medium">Daily habit progress</p>
+          </div>
+          <div onClick={() => navigate('/countdowns')} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-purple-200 hover:shadow-md transition-all">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Clock className="w-16 h-16 text-purple-500"/></div>
+            <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Deadlines</p>
+            <h3 className="text-4xl font-black text-purple-600">{countdowns.filter(c => c.targetDate > Date.now()).length}</h3>
+            <p className="text-xs text-gray-400 mt-2 font-medium">Active upcoming events</p>
+          </div>
         </div>
-        <div onClick={() => navigate('/analytics')} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-orange-200 hover:shadow-md transition-all">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Flame className="w-16 h-16 text-orange-500"/></div>
-          <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Longest Streak</p>
-          <h3 className="text-4xl font-black text-orange-500">12</h3>
-          <p className="text-xs text-gray-400 mt-2 font-medium">Consecutive logged days</p>
-        </div>
-        <div onClick={() => navigate('/analytics')} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-green-200 hover:shadow-md transition-all">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Target className="w-16 h-16 text-green-500"/></div>
-          <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Weekly Score</p>
-          <h3 className="text-4xl font-black text-green-600">84/100</h3>
-          <p className="text-xs text-gray-400 mt-2 font-medium">Based on habits & focus</p>
-        </div>
-        <div onClick={() => navigate('/countdowns')} className="cursor-pointer bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:border-purple-200 hover:shadow-md transition-all">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Clock className="w-16 h-16 text-purple-500"/></div>
-          <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">Deadlines</p>
-          <h3 className="text-4xl font-black text-purple-600">{countdowns.filter(c => c.targetDate > Date.now()).length}</h3>
-          <p className="text-xs text-gray-400 mt-2 font-medium">Active upcoming events</p>
-        </div>
-      </div>
+      )}
 
       {/* MAIN CONTENT GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -303,93 +374,94 @@ export default function Dashboard() {
           </div>
 
           {/* Analytics Summary */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-             <h3 className="font-bold text-xl text-gray-900 mb-4 flex items-center gap-2">Analytics Summary <Activity className="w-5 h-5 text-gray-400"/></h3>
-             <div className="space-y-4">
-                <div className="flex justify-between items-center border-b border-gray-50 pb-3">
-                  <span className="text-gray-500 font-medium text-sm">Best Productive Day</span>
-                  <span className="font-bold text-gray-900">Thursday</span>
-                </div>
-                <div className="flex justify-between items-center border-b border-gray-50 pb-3">
-                  <span className="text-gray-500 font-medium text-sm">Avg Task Completion</span>
-                  <span className="font-bold text-gray-900">2.5 hrs</span>
-                </div>
-                <div className="flex justify-between items-center pb-1">
-                  <span className="text-gray-500 font-medium text-sm">Deadline Success Rate</span>
-                  <span className="font-bold text-green-600">92%</span>
-                </div>
-             </div>
-          </div>
+          {tasks.length > 0 && (
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+               <h3 className="font-bold text-xl text-gray-900 mb-4 flex items-center gap-2">Analytics Summary <Activity className="w-5 h-5 text-gray-400"/></h3>
+               <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-gray-50 pb-3">
+                    <span className="text-gray-500 font-medium text-sm">Best Productive Day</span>
+                    <span className="font-bold text-gray-900">
+                      {weeklyData.reduce((prev, current) => (prev.tasks > current.tasks) ? prev : current).name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-gray-50 pb-3">
+                    <span className="text-gray-500 font-medium text-sm">Tasks Done (7d)</span>
+                    <span className="font-bold text-gray-900">{weeklyData.reduce((acc, d) => acc + d.tasks, 0)}</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-1">
+                    <span className="text-gray-500 font-medium text-sm">Completion Rate</span>
+                    <span className={cn("font-bold", completionRate > 70 ? "text-green-600" : "text-orange-500")}>
+                      {completionRate}%
+                    </span>
+                  </div>
+               </div>
+            </div>
+          )}
 
           {/* Mood/Productivity Check-in */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+          <div 
+            onClick={() => setShowMoodModal(true)}
+            className="cursor-pointer group active:scale-95 transition-all bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-blue-200"
+          >
             <h3 className="font-bold text-gray-900 mb-2">How are you feeling?</h3>
-            <p className="text-sm text-gray-500 mb-4">Log your daily mood & energy</p>
-            <div className="flex gap-3 mt-2">
-              {['😭', '😕', '😐', '🙂', '🤩'].map((emoji, i) => (
-                <button key={i} className="text-3xl hover:scale-125 transition-transform origin-center grayscale hover:grayscale-0">
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Smart Suggestions */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-            <h3 className="font-bold text-xl text-gray-900 mb-4 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-yellow-500"/> Smart Suggestions
-            </h3>
-            <div className="space-y-3">
-               <div className="p-3 bg-blue-50 border border-blue-100 rounded-2xl cursor-pointer hover:bg-blue-100 transition-colors">
-                  <p className="font-bold text-sm text-blue-900">Follow up on "Design Review"</p>
-                  <p className="text-xs text-blue-600 mt-0.5">Based on your recent completed task</p>
-               </div>
-               <div className="p-3 bg-purple-50 border border-purple-100 rounded-2xl cursor-pointer hover:bg-purple-100 transition-colors">
-                  <p className="font-bold text-sm text-purple-900">Try a 25m Focus Session</p>
-                  <p className="text-xs text-purple-600 mt-0.5">You haven't tracked focus today</p>
-               </div>
-            </div>
+            {latestMood ? (
+              <div className="flex flex-col items-center gap-2">
+                 <span className="text-5xl group-hover:scale-110 transition-transform">{latestMood.mood === 'great' ? '🤩' : latestMood.mood === 'good' ? '🙂' : latestMood.mood === 'tired' ? '😫' : latestMood.mood === 'stressed' ? '😕' : latestMood.mood === 'sad' ? '😭' : '😐'}</span>
+                 <p className="text-xs font-black uppercase tracking-widest text-blue-600 mt-2">Latest: {latestMood.mood}</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-sm text-gray-500 mb-4">Log your daily mood & energy</p>
+                <div className="flex gap-3 mt-2">
+                  {['😭', '😕', '😐', '🙂', '🤩'].map((emoji, i) => (
+                    <button key={i} className="text-3xl hover:scale-125 transition-transform origin-center grayscale hover:grayscale-0">
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Today Habit Goals */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col">
+          <div 
+            onClick={() => setShowHabitModal(true)}
+            className="cursor-pointer group active:scale-95 transition-all bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col hover:border-blue-200"
+          >
             <h3 className="font-bold text-xl text-gray-900 mb-4">Today Habit Goals</h3>
             <div className="space-y-4">
-              <div>
-                <div className="flex justify-between items-center mb-1 text-sm font-bold">
-                   <span className="text-gray-700 flex items-center gap-2"><span className="text-lg">💧</span> Drink Water</span>
-                   <span className="text-blue-500">4 / 8 glasses</span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-2">
-                  <div className="bg-blue-500 h-2 rounded-full" style={{width: '50%'}}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between items-center mb-1 text-sm font-bold">
-                   <span className="text-gray-700 flex items-center gap-2"><span className="text-lg">🏃</span> Morning Run</span>
-                   <span className="text-green-500">Done</span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{width: '100%'}}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between items-center mb-1 text-sm font-bold">
-                   <span className="text-gray-700 flex items-center gap-2"><span className="text-lg">📚</span> Reading</span>
-                   <span className="text-orange-500">15 / 30 mins</span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-2">
-                  <div className="bg-orange-500 h-2 rounded-full" style={{width: '50%'}}></div>
-                </div>
-              </div>
+              {habits.length === 0 ? (
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest text-center py-4">No habits yet</p>
+              ) : habits.slice(0, 3).map(habit => {
+                const todayStr = format(new Date(), 'yyyy-MM-dd');
+                const isDone = habit.logs.includes(todayStr);
+                return (
+                  <div key={habit.id}>
+                    <div className="flex justify-between items-center mb-1 text-sm font-bold">
+                       <span className={cn("text-gray-700 flex items-center gap-2", isDone && "text-gray-400")}>
+                          <span className="text-lg">{habit.icon}</span> {habit.name}
+                       </span>
+                       <span className={cn("text-xs font-black", isDone ? "text-green-500" : "text-blue-500")}>
+                          {isDone ? 'Done' : 'Pending'}
+                       </span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                      <div 
+                        className={cn("h-full transition-all duration-500", isDone ? "bg-green-500" : "bg-blue-500")} 
+                        style={{width: isDone ? '100%' : '30%'}}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Today's Priority List */}
+          {/* Today's Focus */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
             <h3 className="font-bold text-xl text-gray-900 mb-4">Today's Focus</h3>
-            <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-               {loading ? <p className="text-gray-400 text-sm">Loading...</p> : tasks.filter(t => {
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 no-scrollbar">
+               {tasksLoading ? <p className="text-gray-400 text-sm">Loading...</p> : tasks.filter(t => {
                  if (t.status === 'completed') return false;
                  if (!t.dueDate) return true;
                  return new Date(t.dueDate).toDateString() === new Date().toDateString();
@@ -402,7 +474,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
-              {!loading && taskStats.pending === 0 && (
+              {!tasksLoading && taskStats.pending === 0 && (
                 <div className="flex flex-col items-center justify-center text-gray-400 py-10">
                   <CheckCircle2 className="w-12 h-12 mb-3 opacity-20 text-blue-600" />
                   <p className="text-sm font-bold">All caught up!</p>
@@ -410,7 +482,6 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-
         </div>
       </div>
     </div>

@@ -4,30 +4,17 @@ import { db } from '../firebase';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Plus, Check, Search, Calendar, BarChart2, CheckCircle2, Flame, RefreshCcw, Sun, Moon, Sunset, CloudMoon } from 'lucide-react';
+import { Plus, Check, Search, Calendar, BarChart2, CheckCircle2, Flame, RefreshCcw, Sun, Moon, Sunset, CloudMoon, Timer, Activity, Trash2, LayoutGrid } from 'lucide-react';
 import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
+import { cn } from '../lib/utils';
 import { HabitOnboarding } from '../components/habits/HabitOnboarding';
 import { HabitLibraryModal } from '../components/habits/HabitLibraryModal';
 import { HabitTemplate } from '../lib/habit-library';
 import { CustomHabitModal } from '../components/habits/CustomHabitModal';
 import confetti from 'canvas-confetti';
 
-export interface Habit {
-  id: string;
-  userId: string;
-  name: string;
-  categoryId: string;
-  timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night' | 'any';
-  frequency: string;
-  icon: string;
-  color: string;
-  createdAt: number;
-  logs: string[];
-  trackType?: string;
-  targetNumber?: number;
-  unit?: string;
-  reminderTime?: string;
-}
+import { HabitAnalytics } from '../components/habits/HabitAnalytics';
+import { useHabitsStore, Habit } from '../store/habitsStore';
 
 const calculateStreak = (logs: string[]) => {
   if (!logs || logs.length === 0) return 0;
@@ -62,28 +49,26 @@ const TIME_BLOCKS = [
 
 export default function Habits() {
   const { user } = useAuthStore();
-  const [habits, setHabits] = useState<Habit[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { habits, loading, subscribe, addHabit, updateHabit, deleteHabit, toggleLog } = useHabitsStore();
+  
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showCustomModal, setShowCustomModal] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<HabitTemplate | null>(null);
   const [activeTab, setActiveTab] = useState<'routine' | 'weekly' | 'progress'>('routine');
 
   useEffect(() => {
-    if (!user) return;
-    const q = query(collection(db, 'habits'), where('userId', '==', user.uid));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Habit));
-      setHabits(fetched);
-      setLoading(false);
-      
-      // If user has no habits, assume new and show onboarding
-      if (fetched.length === 0 && !localStorage.getItem('habitOnboardingDone')) {
-        setShowOnboarding(true);
-      }
-    });
-    return () => unsubscribe();
-  }, [user]);
+    if (user?.uid) {
+      const unsub = subscribe(user.uid);
+      return () => unsub();
+    }
+  }, [user?.uid, subscribe]);
+
+  useEffect(() => {
+    if (!loading && habits.length === 0 && !localStorage.getItem('habitOnboardingDone')) {
+      setShowOnboarding(true);
+    }
+  }, [loading, habits.length]);
 
   const handleOnboardingComplete = async (selectedTemplates: HabitTemplate[]) => {
     if (!user) return;
@@ -111,25 +96,20 @@ export default function Habits() {
     }
   };
 
-  const handleAddFromLibrary = async (template: HabitTemplate) => {
-    if (!user) return;
-    await addDoc(collection(db, 'habits'), {
-      userId: user.uid,
-      name: template.name,
-      categoryId: template.categoryId || 'health',
-      timeOfDay: template.timeOfDay,
-      frequency: template.frequency,
-      icon: template.icon,
-      color: template.color || 'bg-blue-500',
-      createdAt: Date.now(),
-      logs: []
-    });
+  const handleAddFromLibrary = (template: HabitTemplate) => {
+    setSelectedTemplate(template);
     setShowLibrary(false);
+    setShowCustomModal(true);
+  };
+
+  const handleNewHabit = () => {
+    setSelectedTemplate(null);
+    setShowCustomModal(true);
   };
 
   const handleCreateCustomHabit = async (habitData: any) => {
     if (!user) return;
-    await addDoc(collection(db, 'habits'), {
+    await addHabit({
       userId: user.uid,
       name: habitData.name || 'New Habit',
       categoryId: habitData.category.toLowerCase(),
@@ -137,8 +117,6 @@ export default function Habits() {
       frequency: habitData.frequency.toLowerCase(),
       icon: habitData.icon,
       color: habitData.color,
-      createdAt: Date.now(),
-      logs: [],
       trackType: habitData.trackType,
       targetNumber: habitData.targetNumber,
       unit: habitData.unit,
@@ -147,12 +125,8 @@ export default function Habits() {
     setShowCustomModal(false);
   };
 
-  const toggleLog = async (habitId: string, dateStr: string, currentLogs: string[]) => {
+  const handleToggleLog = async (habitId: string, dateStr: string, currentLogs: string[]) => {
     const isAdding = !currentLogs.includes(dateStr);
-    const newLogs = isAdding 
-      ? [...currentLogs, dateStr]
-      : currentLogs.filter(d => d !== dateStr);
-      
     if (isAdding) {
       confetti({
         particleCount: 100,
@@ -161,31 +135,30 @@ export default function Habits() {
         colors: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6']
       });
     }
-    
-    await updateDoc(doc(db, 'habits', habitId), { logs: newLogs });
+    await toggleLog(habitId, dateStr);
   };
 
-  const handleDragStart = (e: React.DragEvent, habitId: string) => {
+  const onDragStart = (e: React.DragEvent, habitId: string) => {
     e.dataTransfer.setData('habitId', habitId);
   };
 
-  const handleDrop = async (e: React.DragEvent, timeOfDay: string) => {
+  const onDrop = async (e: React.DragEvent, timeOfDay: string) => {
     e.preventDefault();
     const habitId = e.dataTransfer.getData('habitId');
     if (!habitId) return;
     const habit = habits.find(h => h.id === habitId);
     if (habit && habit.timeOfDay !== timeOfDay) {
-      await updateDoc(doc(db, 'habits', habitId), { timeOfDay });
+      await updateHabit(habitId, { timeOfDay: timeOfDay as any });
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); // allow drop
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); 
   };
 
-  const deleteHabit = async (habitId: string) => {
+  const onDeleteHabit = async (habitId: string) => {
     if (confirm("Are you sure you want to remove this habit?")) {
-      await deleteDoc(doc(db, 'habits', habitId));
+      await deleteHabit(habitId);
     }
   };
 
@@ -196,88 +169,114 @@ export default function Habits() {
   const progressPercent = habits.length ? Math.round((completedToday / habits.length) * 100) : 0;
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-12">
+    <div className="space-y-8 max-w-6xl mx-auto pb-20 animate-in fade-in duration-500">
       {showOnboarding && <HabitOnboarding onComplete={handleOnboardingComplete} />}
-      <HabitLibraryModal isOpen={showLibrary} onClose={() => setShowLibrary(false)} onAddHabit={handleAddFromLibrary} />
-      <CustomHabitModal isOpen={showCustomModal} onClose={() => setShowCustomModal(false)} onSave={handleCreateCustomHabit} />
+      <HabitLibraryModal 
+        isOpen={showLibrary} 
+        onClose={() => setShowLibrary(false)} 
+        onAddHabit={handleAddFromLibrary}
+        onCreateCustom={() => {
+          setShowLibrary(false);
+          handleNewHabit();
+        }}
+      />
+      <CustomHabitModal 
+        isOpen={showCustomModal} 
+        onClose={() => { setShowCustomModal(false); setSelectedTemplate(null); }} 
+        onSave={handleCreateCustomHabit} 
+        initialData={selectedTemplate}
+      />
 
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-border pb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Habit Tracker</h1>
-          <p className="text-muted-foreground mt-1">Focused, intentional, and ready.</p>
-        </div>
-        
-        <div className="flex gap-4 items-center flex-wrap">
-          <div className="flex gap-2 bg-muted p-1 rounded-xl">
-            <Button variant={activeTab === 'routine' ? 'default' : 'ghost'} onClick={() => setActiveTab('routine')} size="sm"><CheckCircle2 className="w-4 h-4 mr-2"/> Routine</Button>
-            <Button variant={activeTab === 'weekly' ? 'default' : 'ghost'} onClick={() => setActiveTab('weekly')} size="sm"><Calendar className="w-4 h-4 mr-2"/> Weekly</Button>
-            <Button variant={activeTab === 'progress' ? 'default' : 'ghost'} onClick={() => setActiveTab('progress')} size="sm"><BarChart2 className="w-4 h-4 mr-2"/> Progress</Button>
+      {/* Hero Header */}
+      <div className="px-4 py-8 md:px-0">
+        <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tighter leading-none mb-2">
+          Habit <span className="text-blue-600">Master</span>
+        </h1>
+        <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-xs">Transform your life one ritual at a time</p>
+      </div>
+
+      {/* Sticky Action Toolbar */}
+      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 -mx-4 px-4 py-4 mb-8">
+        <div className="max-w-6xl mx-auto flex flex-col gap-4">
+          {/* Main Action Buttons - 2x2 Grid on Mobile, Row on Desktop */}
+          <div className="grid grid-cols-2 lg:flex gap-3 items-center w-full">
+            <Button 
+              onClick={handleNewHabit} 
+              className="h-16 lg:h-14 lg:flex-1 rounded-[1.5rem] bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-100 flex flex-col sm:flex-row items-center justify-center font-black text-xs sm:text-sm uppercase tracking-wider group transition-all active:scale-95 gap-1 sm:gap-2"
+            >
+              <Plus className="w-5 h-5 stroke-[3] group-hover:rotate-90 transition-transform" /> 
+              <span>Add Habit</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowLibrary(true)} 
+              className="h-16 lg:h-14 lg:flex-1 rounded-[1.5rem] border-2 border-gray-100 font-black text-xs sm:text-sm uppercase tracking-wider bg-white hover:bg-gray-50 flex flex-col sm:flex-row items-center justify-center text-gray-700 active:scale-95 transition-all gap-1 sm:gap-2"
+            >
+              <Search className="w-5 h-5 stroke-[3]" /> 
+              <span>Library</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => setActiveTab('routine')}
+              className={cn(
+                "h-16 lg:h-14 lg:flex-1 rounded-[1.5rem] font-black text-xs sm:text-sm uppercase tracking-wider transition-all active:scale-95 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2",
+                activeTab === 'routine' ? "bg-gray-100 text-gray-900" : "text-gray-400"
+              )}
+            >
+              <LayoutGrid className="w-5 h-5" /> 
+              <span>My Habits</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => setActiveTab('progress')}
+              className={cn(
+                "h-16 lg:h-14 lg:flex-1 rounded-[1.5rem] font-black text-xs sm:text-sm uppercase tracking-wider transition-all active:scale-95 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2",
+                activeTab === 'progress' ? "bg-gray-100 text-gray-900" : "text-gray-400"
+              )}
+            >
+              <BarChart2 className="w-5 h-5" /> 
+              <span>Analytics</span>
+            </Button>
           </div>
-          <Button variant="outline" onClick={() => setShowLibrary(true)}>
-            Browse Library
-          </Button>
-          <Button onClick={() => setShowCustomModal(true)}>
-            <Plus className="w-4 h-4 mr-2" /> Add Habit
-          </Button>
         </div>
-      </header>
+      </div>
 
       {/* Stats Summary Module */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="dark:bg-card/40 border-border group">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Today's Progress</p>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-3xl font-black">{progressPercent}%</span>
-              </div>
-            </div>
-            <div className="w-16 h-16 rounded-full border-4 border-muted relative flex items-center justify-center">
-              <svg className="absolute inset-0 w-full h-full -rotate-90">
-                <circle cx="30" cy="30" r="28" fill="none" stroke="currentColor" strokeWidth="4" strokeDasharray="175" strokeDashoffset={175 - (175 * progressPercent) / 100} className="text-primary transition-all duration-1000" />
-              </svg>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="dark:bg-card/40 border-border">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Completed</p>
-              <p className="text-3xl font-black mt-1">{completedToday} / {habits.length}</p>
-            </div>
-            <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="dark:bg-card/40 border-border">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Longest Streak</p>
-              <p className="text-3xl font-black mt-1">
-                {Math.max(0, ...habits.map(h => calculateStreak(h.logs)))} <span className="text-lg text-muted-foreground font-medium">days</span>
-              </p>
-            </div>
-            <div className="p-3 bg-orange-500/10 text-orange-500 rounded-xl">
-              <Flame className="w-6 h-6" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="dark:bg-card/40 border-border">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Logs</p>
-              <p className="text-3xl font-black mt-1">{habits.reduce((acc, h) => acc + h.logs.length, 0)}</p>
-            </div>
-            <div className="p-3 bg-green-500/10 text-green-500 rounded-xl">
-              <BarChart2 className="w-6 h-6" />
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-2 sm:px-0">
+        <div className="bg-white border border-gray-100 p-6 rounded-[2rem] shadow-sm flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><BarChart2 className="w-12 h-12"/></div>
+          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Today</p>
+          <div className="flex items-end justify-between">
+            <h3 className="text-3xl font-black text-blue-600 leading-none">{progressPercent}%</h3>
+            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><CheckCircle2 className="w-4 h-4" /></div>
+          </div>
+        </div>
+        <div className="bg-white border border-gray-100 p-6 rounded-[2rem] shadow-sm flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Activity className="w-12 h-12 text-orange-500"/></div>
+          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Streak</p>
+          <div className="flex items-end justify-between">
+            <h3 className="text-3xl font-black text-orange-500 leading-none">{Math.max(0, ...habits.map(h => calculateStreak(h.logs)))}</h3>
+            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500"><Flame className="w-4 h-4" /></div>
+          </div>
+        </div>
+        <div className="bg-white border border-gray-100 p-6 rounded-[2rem] shadow-sm flex flex-col justify-between hidden md:flex">
+          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Active</p>
+          <div className="flex items-end justify-between">
+            <h3 className="text-3xl font-black text-gray-900 leading-none">{habits.length}</h3>
+            <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400"><Calendar className="w-4 h-4" /></div>
+          </div>
+        </div>
+        <div className="bg-white border border-gray-100 p-6 rounded-[2rem] shadow-sm flex flex-col justify-between hidden md:flex">
+          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Total Logs</p>
+          <div className="flex items-end justify-between">
+            <h3 className="text-3xl font-black text-gray-900 leading-none">{habits.reduce((acc, h) => acc + h.logs.length, 0)}</h3>
+            <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400"><BarChart2 className="w-4 h-4" /></div>
+          </div>
+        </div>
       </div>
 
       {activeTab === 'routine' && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500 px-2 sm:px-0">
           {TIME_BLOCKS.map(block => {
             const blockHabits = habits.filter(h => h.timeOfDay === block.id);
             if (block.id === 'any' && blockHabits.length === 0) return null; // hide Anytime if empty
@@ -289,30 +288,30 @@ export default function Habits() {
             return (
               <div 
                 key={block.id}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, block.id)}
-                className="bg-card/50 border border-border rounded-2xl p-6 transition-colors"
-                style={{ minHeight: '200px' }}
+                onDragOver={onDragOver}
+                onDrop={(e) => onDrop(e, block.id)}
+                className="bg-white border border-gray-100 rounded-[2.5rem] p-6 shadow-sm shadow-gray-50 flex flex-col"
+                style={{ minHeight: '300px' }}
               >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl ${block.bg} ${block.color}`}>
-                      <block.icon className="w-5 h-5" />
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className={cn("p-4 rounded-2xl shadow-sm", block.bg, block.color)}>
+                      <block.icon className="w-6 h-6 stroke-[2.5]" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">{block.label}</h3>
-                      <p className="text-xs text-muted-foreground">{blockHabits.length} habits</p>
+                      <h3 className="font-black text-xl text-gray-900">{block.label}</h3>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{blockHabits.length} items</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-xl font-bold">{blockProgress}%</span>
+                    <span className="text-2xl font-black text-blue-600">{blockProgress}%</span>
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 flex-1">
                   {blockHabits.length === 0 ? (
-                    <div className="text-center p-8 border-2 border-dashed rounded-xl border-border/50 text-muted-foreground text-sm">
-                      Drag habits here
+                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-3xl border-gray-50 text-gray-300">
+                      <p className="text-sm font-bold uppercase tracking-widest">No habits planned</p>
                     </div>
                   ) : (
                     blockHabits.map(habit => {
@@ -321,52 +320,56 @@ export default function Habits() {
                         <div 
                           key={habit.id}
                           draggable
-                          onDragStart={(e) => handleDragStart(e, habit.id)}
-                          className={`group flex items-center justify-between p-4 rounded-xl border cursor-grab active:cursor-grabbing transition-all ${isDone ? 'bg-muted/50 border-transparent opacity-60' : 'bg-card border-border hover:border-primary/50 shadow-sm'}`}
+                          onDragStart={(e) => onDragStart(e, habit.id)}
+                          className={cn(
+                            "group flex items-center justify-between p-4 rounded-3xl border transition-all active:scale-95",
+                            isDone 
+                              ? 'bg-blue-50/30 border-transparent' 
+                              : 'bg-white border-gray-100 hover:border-blue-200 shadow-sm'
+                          )}
                         >
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-4 flex-1">
                             <button 
-                              onClick={() => toggleLog(habit.id, todayStr, habit.logs)}
-                              className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center transition-colors border-2 ${isDone ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/30 hover:border-primary'}`}
+                              onClick={() => handleToggleLog(habit.id, todayStr, habit.logs)}
+                              className={cn(
+                                "w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center transition-all border-2",
+                                isDone 
+                                  ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100' 
+                                  : 'bg-white border-gray-200 hover:border-blue-400'
+                              )}
                             >
-                              {isDone && <Check className="w-4 h-4" />}
+                              {isDone && <Check className="w-5 h-5 stroke-[4]" />}
                             </button>
-                            <div className="flex items-center gap-3">
-                              <span className={`text-xl w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 text-white ${habit.color || 'bg-blue-500'} shadow-sm`}>{habit.icon}</span>
-                              <div>
-                                <h4 className={`font-medium ${isDone ? 'line-through text-muted-foreground' : ''}`}>{habit.name}</h4>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">{habit.frequency}</span>
+                            <div className="flex items-center gap-4 overflow-hidden">
+                              <span className={cn(
+                                "text-2xl w-12 h-12 flex items-center justify-center rounded-2xl shrink-0 transition-grayscale duration-500",
+                                !isDone ? habit.color || 'bg-blue-500' : 'bg-gray-100 scale-90 grayscale'
+                              )}>{habit.icon}</span>
+                              <div className="truncate">
+                                <h4 className={cn(
+                                  "font-black text-lg truncate",
+                                  isDone ? 'line-through text-gray-400' : 'text-gray-900 group-hover:text-blue-600 transition-colors'
+                                )}>{habit.name}</h4>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{habit.frequency}</span>
                                   {habit.reminderTime && (
-                                    <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full font-bold">
-                                      {habit.reminderTime}
+                                    <span className="flex items-center gap-1 text-[10px] font-black text-blue-600 uppercase">
+                                      <Timer className="w-3 h-3" /> {habit.reminderTime}
                                     </span>
-                                  )}
-                                  {habit.trackType && habit.trackType !== 'Yes/No Complete' && (
-                                    <span className="text-[10px] text-gray-500 font-medium">Goal: {habit.targetNumber} {habit.unit}</span>
                                   )}
                                 </div>
                               </div>
                             </div>
                           </div>
                           
-                          <div className="flex items-center gap-3">
-                            <div className="hidden sm:flex flex-col items-end mr-2">
-                              {calculateStreak(habit.logs) > 0 ? (
-                                <>
-                                  <span className="text-xs font-bold text-orange-500 flex items-center gap-1"><Flame className="w-3 h-3 fill-orange-500"/> {calculateStreak(habit.logs)} Day</span>
-                                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Streak</span>
-                                </>
-                              ) : (
-                                <>
-                                  <span className="text-xs font-bold text-blue-500 flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> {habit.logs.length}</span>
-                                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Total Days</span>
-                                </>
-                              )}
-                            </div>
-                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => deleteHabit(habit.id)}>
-                              <MinusIcon />
-                            </Button>
+                          <div className="flex items-center gap-3 shrink-0 ml-2">
+                             <div className="bg-gray-50 px-2 py-1 rounded-lg flex items-center gap-1">
+                               <Flame className={cn("w-3.5 h-3.5", isDone ? "text-orange-500 fill-orange-500" : "text-gray-300")} />
+                               <span className="text-xs font-black text-gray-500">{calculateStreak(habit.logs)}</span>
+                             </div>
+                             <button onClick={() => deleteHabit(habit.id)} className="p-2 text-gray-200 hover:text-red-500 transition-colors">
+                               <Trash2 className="w-4 h-4" />
+                             </button>
                           </div>
                         </div>
                       )
@@ -417,7 +420,7 @@ export default function Habits() {
                         const isDone = habit.logs.includes(dateStr);
                         return (
                           <td key={i} className="px-2 py-4 text-center">
-                            <button onClick={() => toggleLog(habit.id, dateStr, habit.logs)} className="hover:scale-110 transition-transform">
+                            <button onClick={() => handleToggleLog(habit.id, dateStr, habit.logs)} className="hover:scale-110 transition-transform">
                               <div className={`w-5 h-5 rounded flex items-center justify-center mx-auto border ${isDone ? `bg-primary border-primary text-primary-foreground` : 'border-border bg-card'}`}>
                                 {isDone && <Check className="w-3 h-3" />}
                               </div>
@@ -442,11 +445,7 @@ export default function Habits() {
         </Card>
       )}
 
-      {activeTab === 'progress' && (
-        <div className="h-64 flex items-center justify-center border-2 border-dashed rounded-xl">
-          <p className="text-muted-foreground">More charts coming soon...</p>
-        </div>
-      )}
+      {activeTab === 'progress' && <HabitAnalytics habits={habits} />}
     </div>
   );
 }

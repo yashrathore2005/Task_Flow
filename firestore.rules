@@ -204,6 +204,24 @@ service cloud.firestore {
       allow delete: if isSignedIn() && isValidId(countdownId) && existing().userId == request.auth.uid;
     }
 
+    function isValidMood(data) {
+      return data.keys().hasAll(['userId', 'mood', 'energyLevel', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.mood is string && data.mood.size() <= 50 &&
+             data.energyLevel is number && data.energyLevel >= 1 && data.energyLevel <= 10 &&
+             data.createdAt is number &&
+             data.get('note', '') is string && data.get('note', '').size() <= 1000;
+    }
+
+    match /moods/{moodId} {
+      allow get: if isSignedIn() && isValidId(moodId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(moodId) && isValidMood(incoming());
+      allow update: if isSignedIn() && isValidId(moodId) && existing().userId == request.auth.uid && isValidMood(incoming()) && incoming().userId == existing().userId && incoming().createdAt == existing().createdAt &&
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['mood', 'energyLevel', 'note']));
+      allow delete: if isSignedIn() && isValidId(moodId) && existing().userId == request.auth.uid;
+    }
+
     match /focus_sessions/{sessionId} {
       allow get: if isSignedIn() && isValidId(sessionId) && existing().userId == request.auth.uid;
       allow list: if isSignedIn() && resource.data.userId == request.auth.uid;

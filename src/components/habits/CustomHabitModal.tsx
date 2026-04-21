@@ -11,21 +11,22 @@ interface CustomHabitModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (habitData: any) => void;
+  initialData?: any;
 }
 
-const CATEGORIES = ['Health', 'Study', 'Fitness', 'Work', 'Mindfulness', 'Finance', 'Custom'];
+const CATEGORIES = ['Health', 'Fitness', 'Study', 'Productivity', 'Mindfulness', 'Finance', 'Home', 'Social', 'Growth', 'Custom'];
 const TRACK_TYPES = ['Yes/No Complete', 'Count Based', 'Time Based'];
 const FREQUENCIES = ['Daily', 'Weekly', 'Custom Days'];
 const PRIORITIES = ['Low', 'Medium', 'High'];
 const VISIBILITIES = ['Private', 'Shared'];
 
-const ICONS = ['💧', '🏃', '📚', '🧘', '💊', '💻', '💰', '🍎', '💤', '📝'];
+const ICONS = ['💧', '🏃', '📚', '🧘', '💊', '💻', '💰', '🍎', '💤', '📝', '🧘‍♀️', '😴', '👣', '🧗‍♂️', '🥗', '☕', '🪴', '🧹', '📞', '💡', '🌅'];
 const COLORS = [
   'bg-blue-500', 'bg-green-500', 'bg-red-500', 'bg-yellow-500', 'bg-purple-500', 
   'bg-pink-500', 'bg-indigo-500', 'bg-teal-500', 'bg-orange-500'
 ];
 
-export function CustomHabitModal({ isOpen, onClose, onSave }: CustomHabitModalProps) {
+export function CustomHabitModal({ isOpen, onClose, onSave, initialData }: CustomHabitModalProps) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
@@ -47,6 +48,41 @@ export function CustomHabitModal({ isOpen, onClose, onSave }: CustomHabitModalPr
     visibility: 'Private',
     streakEnabled: true,
   });
+
+  // Effect to handle initialData
+  React.useEffect(() => {
+    if (initialData && isOpen) {
+      setFormData(prev => ({
+        ...prev,
+        ...initialData,
+        // Map category if needed
+        category: initialData.categoryId ? initialData.categoryId.charAt(0).toUpperCase() + initialData.categoryId.slice(1).replace('-', ' ') : prev.category,
+        frequency: initialData.frequency ? initialData.frequency.charAt(0).toUpperCase() + initialData.frequency.slice(1) : prev.frequency,
+      }));
+    } else if (!isOpen) {
+      // Reset if closed
+      setFormData({
+        name: '',
+        description: '',
+        category: 'Health',
+        icon: '💧',
+        color: 'bg-blue-500',
+        startDate: new Date().toISOString().split('T')[0],
+        targetGoal: '',
+        frequency: 'Daily',
+        reminderTime: '08:00',
+        multipleReminders: false,
+        priority: 'Medium',
+        notes: '',
+        motivationText: '',
+        trackType: 'Yes/No Complete',
+        targetNumber: 1,
+        unit: '',
+        visibility: 'Private',
+        streakEnabled: true,
+      });
+    }
+  }, [initialData, isOpen]);
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));

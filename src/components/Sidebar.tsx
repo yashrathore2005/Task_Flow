@@ -9,7 +9,8 @@ import {
   LogOut,
   Settings,
   Download,
-  BarChart2
+  BarChart2,
+  Zap
 } from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
 import { useAuthStore } from '../store/authStore';
@@ -36,8 +37,11 @@ export default function Sidebar({ mobile, onNavigate }: { mobile?: boolean, onNa
 
   return (
     <aside className={cn("w-[220px] bg-sidebar text-sidebar-foreground flex flex-col h-full", mobile ? "" : "border-r border-sidebar-border hidden md:flex")}>
-      <div className={cn("mb-8 px-6 pt-6 flex items-center gap-2", mobile ? "hidden" : "flex")}>
-        <div className="font-bold text-primary text-xl">TaskFlow</div>
+      <div className={cn("mb-8 px-6 pt-6 flex items-center gap-3", mobile ? "hidden" : "flex")}>
+        <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-100">
+           <Zap className="w-6 h-6 fill-white" />
+        </div>
+        <div className="font-black text-gray-900 text-2xl tracking-tighter leading-none">TaskFlow</div>
       </div>
 
       <div className="px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 mt-2">
@@ -85,6 +89,17 @@ export default function Sidebar({ mobile, onNavigate }: { mobile?: boolean, onNa
             Settings
           </Button>
         </Link>
+        <Button 
+          variant="ghost" 
+          onClick={() => {
+            auth.signOut();
+            onNavigate?.();
+          }} 
+          className="w-full justify-start gap-3 px-3 text-red-500 hover:text-red-600 hover:bg-red-50"
+        >
+          <LogOut className="w-4 h-4" />
+          Logout
+        </Button>
       </div>
     </aside>
   );
