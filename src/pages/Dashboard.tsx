@@ -4,7 +4,7 @@ import { useTasksStore } from '../store/tasksStore';
 import { useHabitsStore } from '../store/habitsStore';
 import { useMoodStore } from '../store/moodStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { CheckCircle2, Clock, Calendar as CalendarIcon, Flame, Target, Zap, Timer, CheckSquare, Download, Palette, Activity, Smile, Frown, Meh, Star } from 'lucide-react';
+import { CheckCircle2, Clock, Calendar as CalendarIcon, Flame, Target, Zap, Timer, CheckSquare, Download, Palette, Activity, Smile, Frown, Meh, Star, Sparkles } from 'lucide-react';
 import { format, differenceInDays, isToday, subDays } from 'date-fns';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -55,10 +55,10 @@ export default function Dashboard() {
         setFocusMinutes(mins);
       });
 
-      // Check onboarding
-      if (!localStorage.getItem('onboardingComplete')) {
-        setShowOnboarding(true);
-      }
+      // Check onboarding - disabled for clean start per user request
+      // if (!localStorage.getItem('onboardingComplete')) {
+      //   setShowOnboarding(true);
+      // }
 
       return () => { 
         unsubTasks(); 
@@ -100,7 +100,7 @@ export default function Dashboard() {
        
        const dailyCompletedTasks = tasks.filter(t => t.status === 'completed' && format(t.updatedAt || t.createdAt, 'yyyy-MM-dd') === dateStr).length;
        // Mock focus for old days since we don't have a full history store yet, but use real for today
-       const focusValue = daysBack === 0 ? focusMinutes : (Math.random() * 60 + 20); 
+       const focusValue = daysBack === 0 ? focusMinutes : 0; 
        
        return { name: label, focus: Math.round(focusValue), tasks: dailyCompletedTasks };
     });
@@ -178,9 +178,15 @@ export default function Dashboard() {
             <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">Your clean slate awaits</h2>
             <p className="text-gray-400 font-bold uppercase tracking-widest text-xs mb-8 italic">No tasks, no habits, just endless possibilities</p>
             <div className="flex justify-center gap-4">
-               <button onClick={() => navigate('/tasks')} className="px-8 h-14 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-100">Add First Task</button>
-               <button onClick={() => navigate('/habits')} className="px-8 h-14 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs">Build Habits</button>
+               <button onClick={() => navigate('/tasks')} className="px-8 h-14 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-100 transition-all hover:scale-105 active:scale-95">Add First Task</button>
+               <button onClick={() => navigate('/habits')} className="px-8 h-14 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all hover:scale-105 active:scale-95">Build Habits</button>
             </div>
+            <button 
+              onClick={() => setShowOnboarding(true)}
+              className="mt-8 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-blue-600 transition-colors flex items-center justify-center gap-2 group mx-auto"
+            >
+              <Sparkles className="w-3 h-3 transition-transform group-hover:rotate-12" /> New here? Take a guided tour
+            </button>
         </div>
       )}
 
@@ -332,19 +338,7 @@ export default function Dashboard() {
 
         {/* RIGHT COLUMN */}
         <div className="space-y-6">
-          {/* Next Reminder Alert */}
-          <div className="bg-orange-50 border border-orange-200 rounded-3xl p-5 shadow-sm flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
-                <Clock className="w-5 h-5"/>
-              </div>
-              <div>
-                <p className="font-bold text-orange-900 leading-tight">Read 10 Pages</p>
-                <p className="text-xs text-orange-600 font-semibold mt-0.5">Upcoming in 45 mins</p>
-              </div>
-            </div>
-            <button className="text-orange-500 bg-white border border-orange-200 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-orange-500 hover:text-white transition-colors">Complete</button>
-          </div>
+          {/* Static reminder removed for clean start */}
 
           {/* Calendar Mini Preview */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">

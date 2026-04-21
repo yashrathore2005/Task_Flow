@@ -1,6 +1,6 @@
 {
-  "name": "Remix: TaskFlow",
-  "description": "A comprehensive productivity web app featuring task management, calendar, habit tracking, focus timer, and notes.",
+  "name": "TaskFlow",
+  "description": "Premium, minimal productivity workspace for high-achievers. Featuring clean task management, habit tracking, and focus-driven analytics with a strictly fresh start for every user.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

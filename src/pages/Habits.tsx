@@ -4,7 +4,7 @@ import { db } from '../firebase';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Plus, Check, Search, Calendar, BarChart2, CheckCircle2, Flame, RefreshCcw, Sun, Moon, Sunset, CloudMoon, Timer, Activity, Trash2, LayoutGrid } from 'lucide-react';
+import { Plus, Check, Search, Calendar, BarChart2, CheckCircle2, Flame, RefreshCcw, Sun, Moon, Sunset, CloudMoon, Timer, Activity, Trash2, LayoutGrid, Sparkles } from 'lucide-react';
 import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
 import { cn } from '../lib/utils';
 import { HabitOnboarding } from '../components/habits/HabitOnboarding';
@@ -65,10 +65,9 @@ export default function Habits() {
   }, [user?.uid, subscribe]);
 
   useEffect(() => {
-    if (!loading && habits.length === 0 && !localStorage.getItem('habitOnboardingDone')) {
-      setShowOnboarding(true);
-    }
-  }, [loading, habits.length]);
+    // We no longer show onboarding automatically to ensure a clean start.
+    // User can trigger it manually from the empty state if they want guidance.
+  }, []);
 
   const handleOnboardingComplete = async (selectedTemplates: HabitTemplate[]) => {
     if (!user) return;
@@ -272,7 +271,31 @@ export default function Habits() {
         </div>
       </div>
 
-      {activeTab === 'routine' && (
+      {activeTab === 'routine' && habits.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-20 px-4 bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 mx-2 sm:mx-0">
+          <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+             <Sparkles className="w-10 h-10 text-blue-300" />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-2">Build Your Routine</h2>
+          <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-8">No habits active yet</p>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto px-6 sm:px-0">
+             <Button onClick={() => setShowLibrary(true)} className="flex-1 sm:flex-none h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 font-black uppercase tracking-widest text-xs px-8 shadow-xl shadow-blue-100">
+               Browse Library
+             </Button>
+             <Button onClick={handleNewHabit} variant="outline" className="flex-1 sm:flex-none h-14 rounded-2xl border-2 font-black uppercase tracking-widest text-xs px-8">
+               Custom Habit
+             </Button>
+          </div>
+          <button 
+            onClick={() => setShowOnboarding(true)}
+            className="mt-8 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-blue-600 transition-colors flex items-center gap-2"
+          >
+            <Sparkles className="w-3 h-3" /> Need inspiration? Try Guided Setup
+          </button>
+        </div>
+      )}
+
+      {activeTab === 'routine' && habits.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500 px-2 sm:px-0">
           {TIME_BLOCKS.map(block => {
             const blockHabits = habits.filter(h => h.timeOfDay === block.id);

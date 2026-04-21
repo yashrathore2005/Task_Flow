@@ -58,15 +58,17 @@ export function HabitOnboarding({ onComplete }: { onComplete: (selectedHabits: a
           </div>
         )}
 
-        <DialogFooter className="flex w-full sm:justify-between">
-          {step === 2 && (
+        <DialogFooter className="flex w-full sm:justify-between items-center">
+          {step === 1 ? (
+            <Button variant="ghost" onClick={() => onComplete([])} className="text-gray-400 hover:text-gray-900 font-bold">Skip and Start Fresh</Button>
+          ) : (
             <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>
           )}
           <div className="flex-1" />
           {step === 1 ? (
-            <Button onClick={() => setStep(2)} disabled={!selectedGoal}>Next</Button>
+            <Button onClick={() => setStep(2)} disabled={!selectedGoal} className="px-8 bg-blue-600 hover:bg-blue-700">Next</Button>
           ) : (
-            <Button onClick={handleComplete}>Start Tracking</Button>
+            <Button onClick={handleComplete} className="px-8 bg-blue-600 hover:bg-blue-700">Start Tracking</Button>
           )}
         </DialogFooter>
       </DialogContent>
