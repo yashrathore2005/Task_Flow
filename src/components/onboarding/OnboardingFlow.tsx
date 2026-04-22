@@ -79,9 +79,9 @@ export function OnboardingFlow({ isOpen, onClose }: OnboardingFlowProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(val) => !val && handleSkip()}>
-      <DialogContent className="max-w-xl p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
+      <DialogContent className="max-w-xl p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-background">
         <div className="relative p-12 flex flex-col items-center text-center">
-          <button onClick={handleSkip} className="absolute top-8 right-8 p-2 text-gray-300 hover:text-gray-900 transition-colors">
+          <button onClick={handleSkip} className="absolute top-8 right-8 p-2 text-muted-foreground hover:text-foreground transition-colors">
             <X className="w-6 h-6" />
           </button>
 
@@ -94,15 +94,15 @@ export function OnboardingFlow({ isOpen, onClose }: OnboardingFlowProps) {
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="flex flex-col items-center"
             >
-              <div className={cn("w-24 h-24 rounded-[2rem] flex items-center justify-center mb-10 shadow-lg shadow-blue-50 transition-all duration-500", step.bg, step.color)}>
+              <div className={cn("w-24 h-24 rounded-[2rem] flex items-center justify-center mb-10 shadow-lg transition-all duration-500 shadow-blue-50 dark:shadow-blue-900/10", step.bg, step.color, "dark:bg-blue-900/30")}>
                  <step.icon className="w-12 h-12 stroke-[2.5]" />
               </div>
 
-              <h2 className="text-3xl font-black text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-3xl font-black text-foreground tracking-tight leading-tight mb-4">
                 {step.title}
               </h2>
               
-              <p className="text-lg font-bold text-gray-400 max-w-sm leading-relaxed mb-12 italic">
+              <p className="text-lg font-bold text-muted-foreground max-w-sm leading-relaxed mb-12 italic">
                 "{step.description}"
               </p>
 
@@ -119,18 +119,18 @@ export function OnboardingFlow({ isOpen, onClose }: OnboardingFlowProps) {
 
           <div className="flex gap-2 mb-12">
              {STEPS.map((_, i) => (
-               <div key={i} className={cn("h-1.5 rounded-full transition-all duration-500", i === currentStep ? "w-8 bg-blue-600 shadow-sm" : "w-1.5 bg-gray-100")} />
+               <div key={i} className={cn("h-1.5 rounded-full transition-all duration-500", i === currentStep ? "w-8 bg-blue-600 shadow-sm" : "w-1.5 bg-muted")} />
              ))}
           </div>
 
           <div className="flex w-full gap-4">
              {currentStep < STEPS.length - 1 ? (
                <>
-                 <Button variant="ghost" onClick={handleSkip} className="flex-1 h-16 rounded-3xl font-black uppercase tracking-widest text-xs text-gray-400 hover:text-gray-900">Skip Intro</Button>
+                 <Button variant="ghost" onClick={handleSkip} className="flex-1 h-16 rounded-3xl font-black uppercase tracking-widest text-xs text-muted-foreground hover:text-foreground">Skip Intro</Button>
                  <Button onClick={handleNext} className="flex-1 h-16 rounded-3xl bg-blue-600 hover:bg-blue-700 font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-100">Continue</Button>
                </>
              ) : (
-               <Button onClick={handleNext} className="w-full h-16 rounded-3xl bg-gray-900 hover:bg-black font-black uppercase tracking-widest text-xs shadow-xl shadow-gray-200">Start My Journey</Button>
+               <Button onClick={handleNext} className="w-full h-16 rounded-3xl bg-foreground text-background hover:brightness-110 font-black uppercase tracking-widest text-xs shadow-xl shadow-muted">Start My Journey</Button>
              )}
           </div>
         </div>

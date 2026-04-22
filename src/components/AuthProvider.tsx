@@ -5,45 +5,44 @@ import { useAuthStore } from '../store/authStore';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { setUser, setLoading } = useAuthStore();
+  const { setUser, setIsLoading } = useAuthStore();
 
   useEffect(() => {
+    // Set loading initially just to be safe, though it's already true by default
+    setIsLoading(true);
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      
-      if (user) {
-        // Run profile check in background so we don't block the main UI loading state
-        // unless strictly necessary. For most of this app, the Firebase Auth state is enough.
-        const checkUserProfile = async () => {
-          try {
-            const userRef = doc(db, 'users', user.uid);
-            const userSnap = await getDoc(userRef);
-            
-            if (!userSnap.exists()) {
-              await setDoc(userRef, {
-                email: user.email,
-                displayName: user.displayName || '',
-                theme: 'system',
-                createdAt: Date.now()
-              });
-            }
-          } catch (e) {
-            console.error("Failed to fetch/create user profile", e);
+      try {
+        if (user) {
+          // Sync user in store
+          setUser(user);
+          
+          // Ensure user exists in Firestore
+          const userRef = doc(db, 'users', user.uid);
+          const userSnap = await getDoc(userRef);
+          
+          if (!userSnap.exists()) {
+            await setDoc(userRef, {
+              email: user.email,
+              displayName: user.displayName || '',
+              theme: 'system',
+              createdAt: Date.now()
+            });
           }
-        };
-        
-        // We call it but we don't necessarily await it before setting loading to false
-        // to speed up the initial app load for logged in users.
-        checkUserProfile().finally(() => {
-          setLoading(false);
-        });
-      } else {
-        setLoading(false);
+        } else {
+          // Clear user from store
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Auth sync error:", error);
+      } finally {
+        // Always mark loading as false once Firebase resolves
+        setIsLoading(false);
       }
     });
 
     return () => unsubscribe();
-  }, [setUser, setLoading]);
+  }, [setUser, setIsLoading]);
 
   return <>{children}</>;
 }

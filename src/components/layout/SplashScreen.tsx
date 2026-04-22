@@ -2,16 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap } from 'lucide-react';
 
-export function SplashScreen({ onFinish }: { onFinish: () => void }) {
+export function SplashScreen({ onFinish, ready }: { onFinish: () => void, ready: boolean }) {
   const [show, setShow] = useState(true);
+  const [minTimeDone, setMinTimeDone] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setShow(false);
-      setTimeout(onFinish, 500); // Give time for exit animation
-    }, 2500);
+      setMinTimeDone(true);
+    }, 2000); // Minimum time to show splash
     return () => clearTimeout(timer);
-  }, [onFinish]);
+  }, []);
+
+  useEffect(() => {
+    if (minTimeDone && ready && show) {
+      setShow(false);
+      setTimeout(onFinish, 500); // Animation duration
+    }
+  }, [minTimeDone, ready, show, onFinish]);
 
   return (
     <AnimatePresence>

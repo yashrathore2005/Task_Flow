@@ -41,7 +41,7 @@ export default function Sidebar({ mobile, onNavigate }: { mobile?: boolean, onNa
         <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-100">
            <Zap className="w-5 h-5 fill-white" />
         </div>
-        <div className="font-black text-gray-900 text-xl tracking-tighter leading-none">TaskFlow</div>
+        <div className="font-black text-foreground text-xl tracking-tighter leading-none">TaskFlow</div>
       </div>
 
       <div className="px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 mt-2">

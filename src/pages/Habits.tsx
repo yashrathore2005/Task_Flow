@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
@@ -112,7 +112,7 @@ export default function Habits() {
       userId: user.uid,
       name: habitData.name || 'New Habit',
       categoryId: habitData.category.toLowerCase(),
-      timeOfDay: 'any',
+      timeOfDay: habitData.timeOfDay || 'any',
       frequency: habitData.frequency.toLowerCase(),
       icon: habitData.icon,
       color: habitData.color,
@@ -124,7 +124,7 @@ export default function Habits() {
     setShowCustomModal(false);
   };
 
-  const handleToggleLog = async (habitId: string, dateStr: string, currentLogs: string[]) => {
+  const handleToggleLog = useCallback(async (habitId: string, dateStr: string, currentLogs: string[]) => {
     const isAdding = !currentLogs.includes(dateStr);
     if (isAdding) {
       confetti({
@@ -135,13 +135,28 @@ export default function Habits() {
       });
     }
     await toggleLog(habitId, dateStr);
-  };
+  }, [toggleLog]);
 
-  const onDragStart = (e: React.DragEvent, habitId: string) => {
+  const stats = useMemo(() => {
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const completedToday = habits.filter(h => h.logs.includes(todayStr)).length;
+    const progressPercent = habits.length ? Math.round((completedToday / habits.length) * 100) : 0;
+    const maxStreak = habits.length ? Math.max(0, ...habits.map(h => calculateStreak(h.logs))) : 0;
+    const totalLogs = habits.reduce((acc, h) => acc + h.logs.length, 0);
+
+    return {
+      completedToday,
+      progressPercent,
+      maxStreak,
+      totalLogs
+    };
+  }, [habits]);
+
+  const onDragStart = useCallback((e: React.DragEvent, habitId: string) => {
     e.dataTransfer.setData('habitId', habitId);
-  };
+  }, []);
 
-  const onDrop = async (e: React.DragEvent, timeOfDay: string) => {
+  const onDrop = useCallback(async (e: React.DragEvent, timeOfDay: string) => {
     e.preventDefault();
     const habitId = e.dataTransfer.getData('habitId');
     if (!habitId) return;
@@ -149,26 +164,24 @@ export default function Habits() {
     if (habit && habit.timeOfDay !== timeOfDay) {
       await updateHabit(habitId, { timeOfDay: timeOfDay as any });
     }
-  };
+  }, [habits, updateHabit]);
 
-  const onDragOver = (e: React.DragEvent) => {
+  const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault(); 
-  };
+  }, []);
 
-  const onDeleteHabit = async (habitId: string) => {
-    if (confirm("Are you sure you want to remove this habit?")) {
+  const onDeleteHabit = useCallback(async (habitId: string) => {
+    if (confirm("Are you sure you want to delete this habit?")) {
       await deleteHabit(habitId);
     }
-  };
+  }, [deleteHabit]);
 
   if (loading) return <div className="p-8 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
-  const completedToday = habits.filter(h => h.logs.includes(todayStr)).length;
-  const progressPercent = habits.length ? Math.round((completedToday / habits.length) * 100) : 0;
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-20 animate-in fade-in duration-500">
+    <div className="space-y-5 sm:space-y-8 max-w-6xl mx-auto pb-24 p-3 sm:p-0 animate-in fade-in duration-500">
       {showOnboarding && <HabitOnboarding onComplete={handleOnboardingComplete} />}
       <HabitLibraryModal 
         isOpen={showLibrary} 
@@ -187,20 +200,20 @@ export default function Habits() {
       />
 
       {/* Hero Header */}
-      <div className="px-4 py-4 md:px-0">
-        <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-none mb-1">
+      <div className="px-1 py-4 md:px-0">
+        <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tighter leading-none mb-1">
           Habit Master
         </h1>
-        <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-[10px]">Small steps every day</p>
+        <p className="text-muted-foreground font-bold uppercase tracking-[0.2em] text-[10px]">Small steps every day</p>
       </div>
 
       {/* Sticky Action Toolbar */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 -mx-4 px-4 py-2.5 mb-6">
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border -mx-4 px-4 py-2 mb-6">
         <div className="max-w-6xl mx-auto flex flex-col gap-3">
           <div className="grid grid-cols-2 lg:flex gap-2 items-center w-full">
             <Button 
               onClick={handleNewHabit} 
-              className="h-12 lg:h-11 lg:flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-100 flex items-center justify-center font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 gap-2"
+              className="h-11 sm:h-12 lg:h-11 lg:flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-100 dark:shadow-blue-900/10 flex items-center justify-center font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 gap-2"
             >
               <Plus className="w-4 h-4 stroke-[3]" /> 
               <span>Add</span>
@@ -208,7 +221,7 @@ export default function Habits() {
             <Button 
               variant="outline" 
               onClick={() => setShowLibrary(true)} 
-              className="h-12 lg:h-11 lg:flex-1 rounded-xl border-gray-100 font-black text-[11px] uppercase tracking-wider bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700 active:scale-95 transition-all gap-2"
+              className="h-11 sm:h-12 lg:h-11 lg:flex-1 rounded-xl border-border font-black text-[11px] uppercase tracking-wider bg-card hover:bg-muted flex items-center justify-center text-foreground active:scale-95 transition-all gap-2"
             >
               <Search className="w-4 h-4 stroke-[3]" /> 
               <span>Library</span>
@@ -217,8 +230,8 @@ export default function Habits() {
               variant="ghost" 
               onClick={() => setActiveTab('routine')}
               className={cn(
-                "h-12 lg:h-11 lg:flex-1 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2",
-                activeTab === 'routine' ? "bg-gray-100 text-gray-900" : "text-gray-400"
+                "h-11 sm:h-12 lg:h-11 lg:flex-1 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2",
+                activeTab === 'routine' ? "bg-muted text-foreground" : "text-muted-foreground"
               )}
             >
               <LayoutGrid className="w-4 h-4" /> 
@@ -228,8 +241,8 @@ export default function Habits() {
               variant="ghost" 
               onClick={() => setActiveTab('progress')}
               className={cn(
-                "h-12 lg:h-11 lg:flex-1 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2",
-                activeTab === 'progress' ? "bg-gray-100 text-gray-900" : "text-gray-400"
+                "h-11 sm:h-12 lg:h-11 lg:flex-1 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2",
+                activeTab === 'progress' ? "bg-muted text-foreground" : "text-muted-foreground"
               )}
             >
               <BarChart2 className="w-4 h-4" /> 
@@ -240,55 +253,55 @@ export default function Habits() {
       </div>
 
       {/* Stats Summary Module */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-2 sm:px-0">
-        <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Today</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 px-1 sm:px-0">
+        <div className="bg-card border border-border p-3.5 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+          <p className="text-[9px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 sm:mb-3">Today</p>
           <div className="flex items-end justify-between">
-            <h3 className="text-2xl font-black text-blue-600 leading-none">{progressPercent}%</h3>
-            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><CheckCircle2 className="w-3.5 h-3.5" /></div>
+            <h3 className="text-xl sm:text-2xl font-black text-blue-600 leading-none">{stats.progressPercent}%</h3>
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><CheckCircle2 className="w-3 sm:w-3.5 sm:h-3.5" /></div>
           </div>
         </div>
-        <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Streak</p>
+        <div className="bg-card border border-border p-3.5 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+          <p className="text-[9px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 sm:mb-3">Streak</p>
           <div className="flex items-end justify-between">
-            <h3 className="text-2xl font-black text-orange-500 leading-none">{Math.max(0, ...habits.map(h => calculateStreak(h.logs)))}</h3>
-            <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500"><Flame className="w-3.5 h-3.5" /></div>
+            <h3 className="text-xl sm:text-2xl font-black text-orange-500 leading-none">{stats.maxStreak}</h3>
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-500"><Flame className="w-3 sm:w-3.5 sm:h-3.5" /></div>
           </div>
         </div>
-        <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col justify-between hidden md:flex">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Active</p>
+        <div className="bg-card border border-border p-4 rounded-xl sm:rounded-2xl shadow-sm flex flex-col justify-between hidden lg:flex">
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3">Active</p>
           <div className="flex items-end justify-between">
-            <h3 className="text-2xl font-black text-gray-900 leading-none">{habits.length}</h3>
-            <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400"><Calendar className="w-3.5 h-3.5" /></div>
+            <h3 className="text-2xl font-black text-foreground leading-none">{habits.length}</h3>
+            <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground"><Calendar className="w-3.5 h-3.5" /></div>
           </div>
         </div>
-        <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col justify-between hidden md:flex">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Total Logs</p>
+        <div className="bg-card border border-border p-4 rounded-xl sm:rounded-2xl shadow-sm flex flex-col justify-between hidden lg:flex">
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3">Total Logs</p>
           <div className="flex items-end justify-between">
-            <h3 className="text-2xl font-black text-gray-900 leading-none">{habits.reduce((acc, h) => acc + h.logs.length, 0)}</h3>
-            <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400"><BarChart2 className="w-3.5 h-3.5" /></div>
+            <h3 className="text-2xl font-black text-foreground leading-none">{stats.totalLogs}</h3>
+            <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground"><BarChart2 className="w-3.5 h-3.5" /></div>
           </div>
         </div>
       </div>
 
       {activeTab === 'routine' && habits.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 px-4 bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 mx-2 sm:mx-0">
-          <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-             <Sparkles className="w-10 h-10 text-blue-300" />
+        <div className="flex flex-col items-center justify-center py-12 sm:py-20 px-4 bg-card rounded-2xl sm:rounded-[2.5rem] border-2 border-dashed border-border mx-1 sm:mx-0">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full flex items-center justify-center mb-6">
+             <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-blue-300" />
           </div>
-          <h2 className="text-2xl font-black text-gray-900 mb-2">Build Your Routine</h2>
-          <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-8">No habits active yet</p>
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto px-6 sm:px-0">
-             <Button onClick={() => setShowLibrary(true)} className="flex-1 sm:flex-none h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 font-black uppercase tracking-widest text-xs px-8 shadow-xl shadow-blue-100">
+          <h2 className="text-xl sm:text-2xl font-black text-foreground mb-2">Build Your Routine</h2>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-[9px] sm:text-[10px] mb-8">No habits active yet</p>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-6 sm:px-0">
+             <Button onClick={() => setShowLibrary(true)} className="flex-1 sm:flex-none h-12 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-600 hover:bg-blue-700 font-black uppercase tracking-widest text-xs px-8 shadow-xl shadow-blue-100">
                Browse Library
              </Button>
-             <Button onClick={handleNewHabit} variant="outline" className="flex-1 sm:flex-none h-14 rounded-2xl border-2 font-black uppercase tracking-widest text-xs px-8">
+             <Button onClick={handleNewHabit} variant="outline" className="flex-1 sm:flex-none h-12 sm:h-14 rounded-xl sm:rounded-2xl border-2 font-black uppercase tracking-widest text-xs px-8 border-border">
                Custom Habit
              </Button>
           </div>
           <button 
             onClick={() => setShowOnboarding(true)}
-            className="mt-8 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-blue-600 transition-colors flex items-center gap-2"
+            className="mt-8 text-[10px] font-black text-muted-foreground uppercase tracking-widest hover:text-blue-600 transition-colors flex items-center gap-2"
           >
             <Sparkles className="w-3 h-3" /> Need inspiration? Try Guided Setup
           </button>
@@ -296,7 +309,7 @@ export default function Habits() {
       )}
 
       {activeTab === 'routine' && habits.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500 px-2 sm:px-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500 px-1 sm:px-0">
           {TIME_BLOCKS.map(block => {
             const blockHabits = habits.filter(h => h.timeOfDay === block.id);
             if (block.id === 'any' && blockHabits.length === 0) return null; // hide Anytime if empty
@@ -310,28 +323,28 @@ export default function Habits() {
                 key={block.id}
                 onDragOver={onDragOver}
                 onDrop={(e) => onDrop(e, block.id)}
-                className="bg-white border border-gray-100 rounded-[2.5rem] p-6 shadow-sm shadow-gray-50 flex flex-col"
-                style={{ minHeight: '300px' }}
+                className="bg-card border border-border rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 shadow-sm flex flex-col"
+                style={{ minHeight: '250px' }}
               >
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-4">
-                    <div className={cn("p-4 rounded-2xl shadow-sm", block.bg, block.color)}>
-                      <block.icon className="w-6 h-6 stroke-[2.5]" />
+                <div className="flex items-center justify-between mb-6 sm:mb-8">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className={cn("p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm", block.bg, block.color)}>
+                      <block.icon className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
                     </div>
                     <div>
-                      <h3 className="font-black text-xl text-gray-900">{block.label}</h3>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{blockHabits.length} items</p>
+                      <h3 className="font-black text-lg sm:text-xl text-foreground leading-tight">{block.label}</h3>
+                      <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-widest">{blockHabits.length} items</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-black text-blue-600">{blockProgress}%</span>
+                    <span className="text-xl sm:text-2xl font-black text-blue-600">{blockProgress}%</span>
                   </div>
                 </div>
 
-                <div className="space-y-3 flex-1">
+                <div className="space-y-2.5 sm:space-y-3 flex-1">
                   {blockHabits.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-3xl border-gray-50 text-gray-300">
-                      <p className="text-sm font-bold uppercase tracking-widest">No habits planned</p>
+                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-2xl sm:rounded-3xl border-border text-muted-foreground/30">
+                      <p className="text-[10px] sm:text-sm font-bold uppercase tracking-widest">No habits planned</p>
                     </div>
                   ) : (
                     blockHabits.map(habit => {
@@ -342,39 +355,39 @@ export default function Habits() {
                           draggable
                           onDragStart={(e) => onDragStart(e, habit.id)}
                           className={cn(
-                            "group flex items-center justify-between p-4 rounded-3xl border transition-all active:scale-95",
+                            "group flex items-center justify-between p-3 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all active:scale-95",
                             isDone 
-                              ? 'bg-blue-50/30 border-transparent' 
-                              : 'bg-white border-gray-100 hover:border-blue-200 shadow-sm'
+                              ? 'bg-blue-50/30 dark:bg-blue-900/10 border-transparent' 
+                              : 'bg-background border-border hover:border-blue-200 shadow-sm'
                           )}
                         >
-                          <div className="flex items-center gap-4 flex-1">
+                          <div className="flex items-center gap-3 sm:gap-4 flex-1 overflow-hidden">
                             <button 
                               onClick={() => handleToggleLog(habit.id, todayStr, habit.logs)}
                               className={cn(
-                                "w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center transition-all border-2",
+                                "w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 rounded-full flex items-center justify-center transition-all border-2",
                                 isDone 
                                   ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100' 
-                                  : 'bg-white border-gray-200 hover:border-blue-400'
+                                  : 'bg-card border-border hover:border-blue-400'
                               )}
                             >
-                              {isDone && <Check className="w-5 h-5 stroke-[4]" />}
+                              {isDone && <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[4]" />}
                             </button>
-                            <div className="flex items-center gap-4 overflow-hidden">
+                            <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
                               <span className={cn(
-                                "text-2xl w-12 h-12 flex items-center justify-center rounded-2xl shrink-0 transition-grayscale duration-500",
-                                !isDone ? habit.color || 'bg-blue-500' : 'bg-gray-100 scale-90 grayscale'
+                                "text-xl sm:text-2xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl sm:rounded-2xl shrink-0 transition-grayscale duration-500",
+                                !isDone ? habit.color || 'bg-blue-500' : 'bg-muted scale-90 grayscale opacity-40'
                               )}>{habit.icon}</span>
                               <div className="truncate">
                                 <h4 className={cn(
-                                  "font-black text-lg truncate",
-                                  isDone ? 'line-through text-gray-400' : 'text-gray-900 group-hover:text-blue-600 transition-colors'
+                                  "font-black text-base sm:text-lg truncate",
+                                  isDone ? 'line-through text-muted-foreground' : 'text-foreground group-hover:text-blue-600 transition-colors'
                                 )}>{habit.name}</h4>
-                                <div className="flex items-center gap-3">
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{habit.frequency}</span>
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground">{habit.frequency}</span>
                                   {habit.reminderTime && (
-                                    <span className="flex items-center gap-1 text-[10px] font-black text-blue-600 uppercase">
-                                      <Timer className="w-3 h-3" /> {habit.reminderTime}
+                                    <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-black text-blue-600 uppercase">
+                                      <Timer className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> {habit.reminderTime}
                                     </span>
                                   )}
                                 </div>
@@ -382,13 +395,13 @@ export default function Habits() {
                             </div>
                           </div>
                           
-                          <div className="flex items-center gap-3 shrink-0 ml-2">
-                             <div className="bg-gray-50 px-2 py-1 rounded-lg flex items-center gap-1">
-                               <Flame className={cn("w-3.5 h-3.5", isDone ? "text-orange-500 fill-orange-500" : "text-gray-300")} />
-                               <span className="text-xs font-black text-gray-500">{calculateStreak(habit.logs)}</span>
+                          <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-1 sm:ml-2">
+                             <div className="bg-muted p-1 sm:p-1.5 px-2 rounded-lg flex items-center gap-1">
+                               <Flame className={cn("w-3 sm:w-3.5 sm:h-3.5", isDone ? "text-orange-500 fill-orange-500" : "text-muted-foreground/30")} />
+                               <span className="text-[10px] sm:text-xs font-black text-muted-foreground">{calculateStreak(habit.logs)}</span>
                              </div>
-                             <button onClick={() => deleteHabit(habit.id)} className="p-2 text-gray-200 hover:text-red-500 transition-colors">
-                               <Trash2 className="w-4 h-4" />
+                             <button onClick={() => onDeleteHabit(habit.id)} className="p-1 sm:p-2 text-muted-foreground/20 hover:text-red-500 transition-colors">
+                               <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                              </button>
                           </div>
                         </div>

@@ -18,10 +18,10 @@ export default defineConfig(({mode}) => {
           globPatterns: ['**/*.{js,css,html,ico,png,svg}']
         },
         manifest: {
-          name: 'Productivity Suite',
-          short_name: 'Productivity',
-          description: 'Your ultimate productivity and organization suite',
-          theme_color: '#ffffff',
+          name: 'TaskFlow',
+          short_name: 'TaskFlow',
+          description: 'Premium, minimal productivity workspace for high-achievers',
+          theme_color: '#2563eb',
           background_color: '#ffffff',
           start_url: '/',
           display: 'standalone',

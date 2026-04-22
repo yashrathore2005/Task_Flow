@@ -77,16 +77,16 @@ export function CompletedTasksModal({ isOpen, onClose }: CompletedTasksModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={(val) => !val && onClose()}>
-      <DialogContent className="max-w-3xl h-[85vh] flex flex-col p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
-        <DialogHeader className="p-8 pb-4 bg-white sticky top-0 z-10">
+      <DialogContent className="max-w-3xl h-[85vh] flex flex-col p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-background">
+        <DialogHeader className="p-8 pb-4 bg-card sticky top-0 z-10 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-green-600">
+              <div className="w-12 h-12 rounded-2xl bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-green-600">
                 <History className="w-6 h-6" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-black tracking-tight">Archive</DialogTitle>
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Your Hall of Fame</p>
+                <DialogTitle className="text-2xl font-black tracking-tight text-foreground">Archive</DialogTitle>
+                <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Your Hall of Fame</p>
               </div>
             </div>
             <div className="flex gap-2">
@@ -96,7 +96,7 @@ export function CompletedTasksModal({ isOpen, onClose }: CompletedTasksModalProp
                   onClick={() => setFilter(f as any)}
                   className={cn(
                     "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                    filter === f ? "bg-gray-900 text-white shadow-lg" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    filter === f ? "bg-foreground text-background shadow-lg" : "bg-muted text-muted-foreground hover:bg-muted/80"
                   )}
                 >
                   {f}
@@ -106,49 +106,49 @@ export function CompletedTasksModal({ isOpen, onClose }: CompletedTasksModalProp
           </div>
           
           <div className="grid grid-cols-3 gap-4 mt-8">
-            <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50">
+            <div className="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100/50 dark:border-blue-900/30">
               <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Total</p>
               <h4 className="text-2xl font-black text-blue-600">{stats.total}</h4>
             </div>
-            <div className="bg-green-50/50 p-4 rounded-2xl border border-green-100/50">
+            <div className="bg-green-50/50 dark:bg-green-900/10 p-4 rounded-2xl border border-green-100/50 dark:border-green-900/30">
               <p className="text-[10px] font-black text-green-400 uppercase tracking-widest mb-1">Today</p>
               <h4 className="text-2xl font-black text-green-600">{stats.today}</h4>
             </div>
-            <div className="bg-orange-50/50 p-4 rounded-2xl border border-orange-100/50">
+            <div className="bg-orange-50/50 dark:bg-orange-900/10 p-4 rounded-2xl border border-orange-100/50 dark:border-orange-900/30">
               <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Streak</p>
               <h4 className="text-2xl font-black text-orange-600">{stats.streak}d</h4>
             </div>
           </div>
 
           <div className="mt-6 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
               placeholder="Search through your achievements..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-11 h-12 bg-gray-50 border-none rounded-2xl font-medium focus:ring-2 focus:ring-blue-600/10 transition-all"
+              className="pl-11 h-12 bg-muted border-none rounded-2xl font-medium focus:ring-2 focus:ring-blue-600/10 transition-all text-foreground"
             />
           </div>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-3 mt-4">
           {filteredTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-gray-300">
+            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
               <CheckCircle2 className="w-16 h-16 mb-4 opacity-10" />
               <p className="font-bold uppercase tracking-widest text-sm">No completed tasks found</p>
             </div>
           ) : (
             filteredTasks.map(task => (
-              <div key={task.id} className="group flex items-center justify-between p-5 bg-white border border-gray-100 rounded-3xl hover:border-blue-200 hover:shadow-sm transition-all hover:translate-x-1">
+              <div key={task.id} className="group flex items-center justify-between p-5 bg-card border border-border rounded-3xl hover:border-blue-200 hover:shadow-sm transition-all hover:translate-x-1">
                 <div className="flex items-center gap-4 flex-1">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 shadow-sm">
                     <CheckCircle2 className="w-5 h-5 stroke-[3]" />
                   </div>
                   <div>
-                    <h4 className="font-black text-gray-900 group-hover:text-blue-600 transition-colors line-through decoration-gray-300 opacity-70">{task.title}</h4>
-                    <p className="text-[10px] font-bold text-gray-400 flex items-center gap-2 mt-0.5">
-                      <span className="uppercase tracking-widest">{task.listId || 'Inbox'}</span>
-                      <span className="w-1 h-1 bg-gray-200 rounded-full" />
+                    <h4 className="font-black text-foreground group-hover:text-blue-600 transition-colors line-through decoration-muted-foreground opacity-70">{task.title}</h4>
+                    <p className="text-[10px] font-bold text-muted-foreground flex items-center gap-2 mt-0.5">
+                      <span className="uppercase tracking-widest text-muted-foreground">{task.listId || 'Inbox'}</span>
+                      <span className="w-1 h-1 bg-border rounded-full" />
                       <span>Completed {format(task.updatedAt || task.createdAt, 'MMM d, h:mm a')}</span>
                     </p>
                   </div>
@@ -158,14 +158,14 @@ export function CompletedTasksModal({ isOpen, onClose }: CompletedTasksModalProp
                   <button 
                     onClick={() => handleRestore(task.id)}
                     title="Restore Task"
-                    className="p-3 rounded-xl bg-gray-50 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-all active:scale-90"
+                    className="p-3 rounded-xl bg-muted text-muted-foreground hover:bg-blue-50 hover:text-blue-600 transition-all active:scale-90"
                   >
                     <RotateCcw className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={() => handleDeletePermanently(task.id)}
                     title="Delete Forever"
-                    className="p-3 rounded-xl bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all active:scale-90"
+                    className="p-3 rounded-xl bg-muted text-muted-foreground hover:bg-red-50 hover:text-red-500 transition-all active:scale-90"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

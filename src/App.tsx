@@ -20,9 +20,9 @@ const Settings = React.lazy(() => import('./pages/Settings'));
 const Analytics = React.lazy(() => import('./pages/Analytics'));
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
   
-  if (loading) {
+  if (isLoading) {
     return <div className="h-screen w-screen flex flex-col items-center justify-center bg-background text-foreground animate-pulse">
       <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       <p className="mt-4 text-sm font-semibold text-gray-500">Loading your workspace...</p>
@@ -39,21 +39,23 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 import { SplashScreen } from './components/layout/SplashScreen';
 
 function AppContent() {
-  const [showSplash, setShowSplash] = React.useState(true);
-  const { user, loading } = useAuthStore();
+  const [isSplashDone, setIsSplashDone] = React.useState(() => {
+    return sessionStorage.getItem('splashShown') === 'true';
+  });
+  const { user, isLoading } = useAuthStore();
 
-  // We finish splash only when the timer is done AND auth is not loading
   const handleSplashFinish = () => {
-    if (!loading) {
-      setShowSplash(false);
-    } else {
-      // If still loading, wait a bit more and try again
-      setTimeout(handleSplashFinish, 500);
-    }
+    sessionStorage.setItem('splashShown', 'true');
+    setIsSplashDone(true);
   };
 
-  if (showSplash) {
-    return <SplashScreen onFinish={handleSplashFinish} />;
+  if (!isSplashDone) {
+    return (
+      <SplashScreen 
+        ready={!isLoading} 
+        onFinish={handleSplashFinish} 
+      />
+    );
   }
 
   return (

@@ -29,9 +29,10 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [isLinkSent, setIsLinkSent] = useState(false);
+  const [activeTab, setActiveTab] = useState('login');
   
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuthStore();
+  const { user, isLoading: authLoading } = useAuthStore();
 
   useEffect(() => {
     // Check if user is redirected from email link
@@ -201,7 +202,7 @@ export default function Auth() {
         </CardHeader>
         
         <CardContent className="space-y-6">
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-6">
               <TabsTrigger value="login" className="font-bold">Login</TabsTrigger>
               <TabsTrigger value="register" className="font-bold">Register</TabsTrigger>
@@ -267,6 +268,19 @@ export default function Auth() {
                   {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Sign In
                 </Button>
+                
+                <div className="text-center pt-2">
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Don't have an account?{" "}
+                    <button 
+                      type="button"
+                      onClick={() => setActiveTab("register")}
+                      className="font-bold text-primary hover:underline bg-transparent"
+                    >
+                      Create one
+                    </button>
+                  </p>
+                </div>
               </form>
             </TabsContent>
             
@@ -333,6 +347,19 @@ export default function Auth() {
                   {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Create Account
                 </Button>
+
+                <div className="text-center pt-2">
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Already have an account?{" "}
+                    <button 
+                      type="button"
+                      onClick={() => setActiveTab("login")}
+                      className="font-bold text-primary hover:underline bg-transparent"
+                    >
+                      Sign in
+                    </button>
+                  </p>
+                </div>
               </form>
             </TabsContent>
 

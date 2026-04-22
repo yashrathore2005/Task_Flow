@@ -28,10 +28,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
-  // Handle accent color
   useEffect(() => {
     const root = window.document.documentElement;
-    root.style.setProperty('--primary', accentHues[accentColor] || accentHues.blue);
+    root.style.setProperty('--primary', `hsl(${accentHues[accentColor] || accentHues.blue})`);
+    root.style.setProperty('--primary-foreground', 'hsl(0 0% 100%)'); // white
   }, [accentColor]);
 
   // Handle system theme changes

@@ -50,10 +50,10 @@ export function HabitLibraryModal({ isOpen, onClose, onAddHabit, onCreateCustom 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[100vw] sm:max-w-6xl w-full h-full sm:h-[90vh] flex flex-col p-0 overflow-hidden sm:rounded-[2.5rem] border-none shadow-2xl bg-white transition-all duration-300">
+      <DialogContent className="max-w-[100vw] sm:max-w-6xl w-full h-[95vh] sm:h-[90vh] flex flex-col p-0 overflow-hidden sm:rounded-3xl border-none shadow-2xl bg-white transition-all duration-300">
         
         {/* Mobile Header (Fixed) */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-white sm:bg-transparent">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 bg-white sm:bg-transparent">
           <div>
             <h2 className="text-2xl font-black text-gray-900 tracking-tighter">Habit Library</h2>
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5">Discover your next ritual</p>
@@ -74,7 +74,7 @@ export function HabitLibraryModal({ isOpen, onClose, onAddHabit, onCreateCustom 
               placeholder="Search habits..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 h-11 bg-white border-2 border-gray-100 rounded-xl font-bold focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all text-xs"
+              className="pl-10 h-10 sm:h-11 bg-white border-2 border-gray-100 rounded-xl font-bold focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all text-[10px] sm:text-xs"
             />
           </div>
           
@@ -109,16 +109,16 @@ export function HabitLibraryModal({ isOpen, onClose, onAddHabit, onCreateCustom 
                   <div 
                     key={`featured-${habit.id}`}
                     onClick={() => onAddHabit(habit)}
-                    className="flex-shrink-0 w-64 p-6 rounded-[2rem] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-xl shadow-blue-100 cursor-pointer active:scale-95 transition-all group"
+                    className="flex-shrink-0 w-52 sm:w-64 p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-xl shadow-blue-100 cursor-pointer active:scale-95 transition-all group"
                   >
-                    <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-3xl mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white/20 flex items-center justify-center text-2xl sm:text-3xl mb-3 sm:mb-4">
                       {habit.icon}
                     </div>
-                    <h4 className="font-black text-xl mb-1 truncate">{habit.name}</h4>
-                    <p className="text-white/60 text-xs font-bold uppercase tracking-wider mb-4">{habit.categoryId}</p>
+                    <h4 className="font-black text-lg sm:text-xl mb-1 truncate">{habit.name}</h4>
+                    <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-3 sm:mb-4">{habit.categoryId}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black bg-white/10 px-2 py-1 rounded-lg uppercase">{habit.frequency}</span>
-                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      <span className="text-[9px] font-black bg-white/10 px-2 py-1 rounded-lg uppercase">{habit.frequency}</span>
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
                 ))}
@@ -127,30 +127,30 @@ export function HabitLibraryModal({ isOpen, onClose, onAddHabit, onCreateCustom 
           )}
 
           {/* Category Chips */}
-          <div className="px-6 sm:px-8 mt-12 mb-8">
-            <div className="flex items-center gap-2 mb-6">
-              <Filter className="w-5 h-5 text-blue-600" />
-              <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Browse Categories</h3>
+          <div className="px-5 sm:px-8 mt-8 sm:mt-12 mb-6 sm:mb-8">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
+              <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+              <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-900">Browse Categories</h3>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {categories.map(cat => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id as any)}
                   className={cn(
-                    "px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border-2 flex items-center gap-2",
+                    "px-3 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all border-2 flex items-center gap-1.5 sm:gap-2 shadow-sm",
                     activeCategory === cat.id 
                       ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100" 
                       : "bg-white border-gray-100 text-gray-500 hover:border-blue-200"
                   )}
                 >
-                  <span className="text-base">{cat.icon}</span> {cat.label}
+                  <span className="text-sm sm:text-base">{cat.icon}</span> {cat.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Main List View (changed from grid to list per user request) */}
+          {/* Main Grid View */}
           <div className="px-6 sm:px-8">
             {!search && (
               <div className="flex items-center gap-2 mb-6">
@@ -161,48 +161,40 @@ export function HabitLibraryModal({ isOpen, onClose, onAddHabit, onCreateCustom 
               </div>
             )}
             
-            <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {filteredHabits.map(habit => (
                 <div 
                   key={habit.id} 
-                  className="group flex items-center p-2.5 rounded-xl border border-transparent hover:border-blue-100 hover:bg-blue-50/30 transition-all active:scale-[0.99] cursor-pointer"
+                  className="group bg-white border-2 border-gray-100 p-3 sm:p-4 rounded-2xl sm:rounded-[2rem] hover:border-blue-600/20 hover:shadow-xl hover:shadow-blue-600/5 transition-all cursor-pointer flex flex-col active:scale-95 duration-300"
                   onClick={() => onAddHabit(habit)}
                 >
-                  {/* Left: Icon */}
-                  <div className={cn("w-10 h-10 shrink-0 rounded-lg flex items-center justify-center text-xl shadow-sm transition-transform group-hover:scale-105", habit.color)}>
+                  <div className={cn(
+                    "w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl mb-3 sm:mb-4 transition-transform group-hover:scale-110 duration-500",
+                    habit.color
+                  )}>
                     {habit.icon}
                   </div>
-
-                  {/* Middle: Name & Desc (Hidden on mobile) */}
-                  <div className="flex-1 min-w-0 px-4">
-                    <div className="flex items-baseline gap-2">
-                      <h4 className="font-black text-sm text-gray-900 group-hover:text-blue-600 transition-colors leading-tight truncate">{habit.name}</h4>
-                      <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest hidden sm:inline-block">• {habit.categoryId}</span>
-                    </div>
-                    <p className="text-[10px] text-gray-400 font-medium line-clamp-1 leading-relaxed hidden sm:block">
+                  
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-black text-xs sm:text-sm text-gray-900 mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                      {habit.name}
+                    </h4>
+                    <p className="text-[9px] sm:text-[10px] text-gray-400 font-medium line-clamp-2 leading-relaxed mb-3 sm:mb-4">
                       {habit.description}
                     </p>
                   </div>
 
-                  {/* Metadata & Actions */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    {/* Tags */}
-                    <div className="hidden md:flex items-center gap-1.5">
-                      <div className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded-md">
-                        <Clock className="w-2.5 h-2.5 text-gray-400" />
-                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">{habit.frequency}</span>
-                      </div>
-                      <div className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded-md">
-                        <Gauge className={cn(
-                          "w-2.5 h-2.5",
-                          habit.difficulty === 'easy' ? "text-green-500" : habit.difficulty === 'medium' ? "text-orange-500" : "text-red-500"
-                        )} />
-                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">{habit.difficulty}</span>
-                      </div>
+                  <div className="flex items-center justify-between mt-auto">
+                    <div className="flex items-center gap-1 px-1.5 py-0.5 bg-gray-50 rounded-md">
+                      <Clock className="w-2.5 h-2.5 text-gray-400" />
+                      <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">{habit.frequency}</span>
                     </div>
-
-                    <Button size="sm" className="h-8 w-8 sm:w-auto sm:h-8 px-0 sm:px-3 rounded-lg bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-900 font-black uppercase tracking-widest text-[9px] transition-all border-none">
-                      <Plus className="w-3.5 h-3.5 sm:mr-1.5" /> <span className="hidden sm:inline">Add</span>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      className="h-7 w-7 p-0 rounded-lg hover:bg-blue-600 hover:text-white transition-all text-gray-400"
+                    >
+                      <Plus className="w-4 h-4 stroke-[3]" />
                     </Button>
                   </div>
                 </div>
